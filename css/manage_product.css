@@ -1,0 +1,484 @@
+/* Complete redesign with warm bakery theme using pastel colors */
+/* Adam Bakery - Warm & Cozy Bakery Theme */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Georgia", "Times New Roman", serif;
+  background-color: #faf8f5;
+  color: #5d4e37;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Header Styling */
+header {
+  background: linear-gradient(135deg, #f4e4c1 0%, #e8d5b7 100%);
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 10px rgba(139, 115, 85, 0.1);
+  border-bottom: 3px solid #d4af8c;
+}
+
+header h1 {
+  color: #8b5a3c;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+}
+
+nav {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+nav a {
+  color: #8b5a3c;
+  text-decoration: none;
+  margin: 0 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+nav a:hover {
+  background-color: #d4af8c;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(139, 90, 60, 0.2);
+}
+
+/* Main Content */
+main {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+h2 {
+  color: #8b5a3c;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+h2::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: #d4af8c;
+  margin: 0.5rem auto;
+  border-radius: 2px;
+}
+
+h3 {
+  color: #8b5a3c;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  text-align: center;
+  color: #6b5b47;
+}
+
+/* Cards and Product Styling */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.product-card,
+.package-card {
+  background: #fff;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 15px rgba(139, 90, 60, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid #f4e4c1;
+}
+
+.product-card:hover,
+.package-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(139, 90, 60, 0.15);
+}
+
+.product-card h4,
+.package-card h4 {
+  color: #8b5a3c;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-card .price,
+.package-card .price {
+  color: #d4af8c;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.product-card .category {
+  background-color: #f4e4c1;
+  color: #8b5a3c;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+/* Forms */
+form {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(139, 90, 60, 0.1);
+  max-width: 600px;
+  margin: 2rem auto;
+  border: 2px solid #f4e4c1;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #8b5a3c;
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid #e8d5b7;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s ease;
+  font-family: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #d4af8c;
+  box-shadow: 0 0 0 3px rgba(212, 175, 140, 0.1);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Buttons */
+button,
+.btn {
+  background: linear-gradient(135deg, #d4af8c 0%, #c19a6b 100%);
+  color: white;
+  padding: 0.8rem 2rem;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+button:hover,
+.btn:hover {
+  background: linear-gradient(135deg, #c19a6b 0%, #a67c52 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 90, 60, 0.3);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #f4e4c1 0%, #e8d5b7 100%);
+  color: #8b5a3c;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #e8d5b7 0%, #dcc5a0 100%);
+}
+
+/* Lists */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #fff;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(139, 90, 60, 0.1);
+  border-left: 4px solid #d4af8c;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(139, 90, 60, 0.1);
+  margin: 1rem 0;
+}
+
+th,
+td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #f4e4c1;
+} 
+  
+
+th {
+  background-color: #f4e4c1;
+  color: #8b5a3c;
+  font-weight: 600;
+}
+
+tr:hover {
+  background-color: #faf8f5;
+}
+
+td.aksi form {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    outline: none;
+}
+
+/* Styling tombol hapus */
+/* Pastikan form di kolom Aksi tidak punya style yang bikin ada border */
+td form {
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Styling tombol hapus yang bersih */
+td form button {
+    display: inline-block;              /* pastikan tombol tetap inline */
+    background-color: #d4a373 !important;
+    color: white !important;
+    font-size: 14px;
+    font-family: inherit;
+    padding: 6px 14px !important;
+    border: none !important;            /* hilangkan border */
+    outline: none !important;           /* hilangkan outline */
+    box-shadow: none !important;        /* hilangkan efek bayangan */
+    border-radius: 10px !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Efek hover agar terlihat interaktif */
+td form button:hover {
+    background-color: #c2855a !important;
+    transform: scale(1.05);
+}
+
+
+
+
+/* Footer */
+footer {
+  background: linear-gradient(135deg, #8b5a3c 0%, #6b4423 100%);
+  color: #f4e4c1;
+  text-align: center;
+  padding: 2rem;
+  margin-top: 3rem;
+}
+
+footer p {
+  color: #f4e4c1;
+  margin: 0;
+}
+
+/* Utility Classes */
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.mb-1 {
+  margin-bottom: 1rem;
+}
+.mb-2 {
+  margin-bottom: 2rem;
+}
+.mt-1 {
+  margin-top: 1rem;
+}
+.mt-2 {
+  margin-top: 2rem;
+}
+
+/* Alert Messages */
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+/* Rating Stars */
+.rating {
+  color: #ffc107;
+  font-size: 1.2rem;
+}
+
+.rating .empty {
+  color: #e9ecef;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  header {
+    padding: 1rem;
+  }
+
+  header h1 {
+    font-size: 2rem;
+  }
+
+  nav a {
+    display: block;
+    margin: 0.5rem 0;
+  }
+
+  main {
+    padding: 0 1rem;
+  }
+
+  .product-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  form {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+}
+
+/* Admin Panel Specific Styles */
+.admin-header {
+  background: linear-gradient(135deg, #6b4423 0%, #5d4e37 100%);
+  color: #f4e4c1;
+}
+
+.admin-nav a {
+  color: #f4e4c1;
+}
+
+.admin-nav a:hover {
+  background-color: #8b5a3c;
+  color: #fff;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.stat-card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(139, 90, 60, 0.1);
+  border-top: 4px solid #d4af8c;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #c9c5c3;
+}
+
+.stat-label {
+  color: #6b5b47;
+  margin-top: 0.5rem;
+}
+
+/* Badge status umum */
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+/* Warna status */
+.status-badge.pending {
+    background-color: #fff7e6;
+    color: #d48806;
+    border: 1px solid #ffd666;
+}
+
+.status-badge.approved {
+    background-color: #f6ffed;
+    color: #389e0d;
+    border: 1px solid #b7eb8f;
+}
+
+.status-badge.rejected {
+    background-color: #fff1f0;
+    color: #cf1322;
+    border: 1px solid #ffa39e;
+}

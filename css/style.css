@@ -1,0 +1,1235 @@
+/* ============================================================================
+   ADAM BAKERY - PROFESSIONAL STYLESHEET
+   ============================================================================
+   A complete, well-organized CSS system with:
+   - Consistent design tokens and color palette
+   - Responsive mobile-first design
+   - Enterprise-grade styling
+   - Zero inline styles required
+   ============================================================================ */
+
+/* ============================================================================
+   1. CSS RESET & BASE STYLES
+   ============================================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #5d4e37;
+  background-color: #faf8f5;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================================
+   2. COLOR PALETTE & DESIGN TOKENS
+   ============================================================================ */
+
+:root {
+  /* Primary Colors */
+  --color-primary: #8b5a3c;
+  --color-primary-dark: #6b4423;
+  --color-primary-light: #c19a6b;
+
+  /* Secondary Colors */
+  --color-secondary: #d4af8c;
+  --color-secondary-light: #f4e4c1;
+  --color-secondary-lighter: #fff8e7;
+
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-light-bg: #faf8f5;
+  --color-light-border: #f0e0c0;
+  --color-text-primary: #5d4e37;
+  --color-text-secondary: #6b5b47;
+  --color-text-light: #8b5a3c;
+
+  /* Status Colors */
+  --color-success: #28a745;
+  --color-error: #dc3545;
+  --color-warning: #ffc107;
+  --color-info: #17a2b8;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 15px;
+  --radius-full: 50px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(139, 90, 60, 0.1);
+  --shadow-md: 0 4px 12px rgba(139, 90, 60, 0.15);
+  --shadow-lg: 0 8px 25px rgba(139, 90, 60, 0.2);
+
+  /* Transitions */
+  --transition: all 0.3s ease;
+}
+
+/* ============================================================================
+   3. TYPOGRAPHY
+   ============================================================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+h1 {
+  font-size: 2.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 2rem;
+  position: relative;
+  text-align: center;
+  padding-bottom: var(--spacing-md);
+}
+
+h2::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: var(--color-secondary);
+  margin: var(--spacing-sm) auto 0;
+  border-radius: 2px;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+}
+
+p {
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--color-primary-light);
+}
+
+/* ============================================================================
+   4. HEADER & NAVIGATION
+   ============================================================================ */
+
+.site-header {
+  background: linear-gradient(135deg, var(--color-secondary-light) 0%, var(--color-secondary-lighter) 100%);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  border-bottom: 3px solid var(--color-secondary);
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.logo {
+  width: 60px;
+  height: auto;
+}
+
+.brand-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  margin: 0;
+  font-size: 1.8rem;
+  color: var(--color-primary);
+}
+
+.brand-tagline {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  font-style: italic;
+  margin: 0;
+}
+
+.main-navigation {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-full);
+  transition: var(--transition);
+  position: relative;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.user-welcome {
+  color: var(--color-text-light);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.cart-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-secondary);
+  color: var(--color-primary);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.cart-link:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.cart-icon {
+  font-size: 1.2rem;
+}
+
+.cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.header-divider {
+  border: none;
+  border-top: 1px solid var(--color-light-border);
+  margin: 0;
+}
+
+/* ============================================================================
+   5. MAIN CONTENT & LAYOUT
+   ============================================================================ */
+
+.page-content {
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: var(--spacing-xl) auto;
+  padding: 0 var(--spacing-lg);
+}
+
+main {
+  background-color: var(--color-light-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.page-header h2 {
+  margin-bottom: var(--spacing-md);
+}
+
+.page-header p {
+  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+}
+
+/* ============================================================================
+   6. FORMS & INPUTS
+   ============================================================================ */
+
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+input[type="file"],
+select,
+textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--color-light-border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  transition: var(--transition);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(212, 175, 140, 0.1);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  padding: var(--spacing-sm);
+}
+
+/* ============================================================================
+   7. BUTTONS
+   ============================================================================ */
+
+button,
+.btn,
+input[type="submit"] {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary-light) 100%);
+  color: var(--color-white);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+}
+
+button:hover,
+.btn:hover,
+input[type="submit"]:hover {
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+button:active,
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary-light) 100%);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--color-secondary-light) 0%, var(--color-secondary-lighter) 100%);
+  color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, var(--color-secondary-lighter) 0%, var(--color-light-border) 100%);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #d4a373 0%, #c2855a 100%);
+  color: var(--color-white);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #c2855a 0%, #a67c52 100%);
+}
+
+.btn-logout {
+  background: linear-gradient(135deg, #f4e4c1 0%, #e8d5b7 100%);
+  color: #8b5a3c;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.btn-logout:hover {
+  background: linear-gradient(135deg, #e8d5b7 0%, #dcc5a0 100%);
+  transform: translateY(-2px);
+}
+
+.btn-login {
+  background: var(--color-secondary);
+  color: var(--color-primary);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.btn-login:hover {
+  background: var(--color-primary-light);
+  color: var(--color-white);
+  transform: translateY(-2px);
+}
+
+/* ============================================================================
+   8. CARDS & CONTAINERS
+   ============================================================================ */
+
+.product-grid,
+.package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-xl);
+  margin: var(--spacing-xl) 0;
+}
+
+.product-card,
+.package-card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--color-secondary-light);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover,
+.package-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.product-category {
+  display: inline-block;
+  background-color: var(--color-secondary-light);
+  color: var(--color-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  width: fit-content;
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.product-name {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  margin-bottom: var(--spacing-sm);
+  text-align: center;
+}
+
+.product-description {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-md);
+  flex-grow: 1;
+}
+
+.product-price {
+  color: var(--color-secondary);
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.product-reviews {
+  margin: var(--spacing-md) 0;
+  text-align: center;
+}
+
+.review-count,
+.no-reviews {
+  display: block;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  margin-top: var(--spacing-sm);
+}
+
+.add-to-cart-form {
+  margin: var(--spacing-md) 0 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.quantity-input {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.quantity-input label {
+  margin: 0;
+}
+
+.quantity-input input {
+  width: 70px;
+  padding: var(--spacing-sm);
+  text-align: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-2xl);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ============================================================================
+   9. ALERTS & MESSAGES
+   ============================================================================ */
+
+.alert {
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+  font-weight: 500;
+}
+
+.alert-success {
+  background-color: #f1f8f6;
+  color: #1e7e34;
+  border-left-color: var(--color-success);
+}
+
+.alert-error {
+  background-color: #ffecec;
+  color: #a71d2a;
+  border-left-color: var(--color-error);
+}
+
+.alert-warning {
+  background-color: #fff8e5;
+  color: #9c7b00;
+  border-left-color: var(--color-warning);
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-left-color: var(--color-info);
+}
+
+.close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: inherit;
+  float: right;
+}
+
+.close:hover {
+  opacity: 0.7;
+}
+
+/* ============================================================================
+   10. TABLES
+   ============================================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin: var(--spacing-lg) 0;
+}
+
+thead {
+  background-color: var(--color-secondary-light);
+}
+
+th,
+td {
+  padding: var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--color-secondary-light);
+}
+
+th {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+tbody tr:hover {
+  background-color: var(--color-light-bg);
+}
+
+/* ============================================================================
+   11. RATING STARS
+   ============================================================================ */
+
+.rating {
+  color: #ffc107;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+.rating .empty {
+  color: #e9ecef;
+}
+
+/* ============================================================================
+   12. AUTHENTICATION STYLES
+   ============================================================================ */
+
+.auth-container {
+  max-width: 600px;
+  margin: var(--spacing-2xl) auto;
+}
+
+.auth-box {
+  background: var(--color-white);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--color-secondary-light);
+}
+
+.auth-tabs {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+  border-bottom: 2px solid var(--color-secondary-light);
+}
+
+.auth-tab {
+  flex: 1;
+  padding: var(--spacing-md);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.auth-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-secondary);
+}
+
+.auth-form {
+  display: none;
+}
+
+.auth-form.active {
+  display: block;
+}
+
+.auth-form h2 {
+  margin-bottom: var(--spacing-lg);
+  border: none;
+}
+
+.auth-form h2::after {
+  display: none;
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: var(--spacing-lg);
+}
+
+.forgot-password-link {
+  font-size: 0.9rem;
+  color: var(--color-secondary);
+  font-weight: 500;
+}
+
+.forgot-password-link:hover {
+  color: var(--color-primary);
+}
+
+/* ============================================================================
+   13. FOOTER
+   ============================================================================ */
+
+.site-footer {
+  background: linear-gradient(135deg, #d4a373 0%, #c9956c 100%);
+  color: var(--color-white);
+  padding: var(--spacing-xl);
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+.footer-section h4 {
+  color: var(--color-white);
+  margin-bottom: var(--spacing-md);
+}
+
+.footer-section p {
+  color: var(--color-white);
+  font-size: 0.95rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.footer-section ul {
+  list-style: none;
+}
+
+.footer-section li {
+  margin-bottom: var(--spacing-sm);
+  background: none;
+  padding: 0;
+  border: none;
+}
+
+.footer-section a {
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.footer-section a:hover {
+  text-decoration: underline;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-bottom p {
+  margin: 0;
+  color: var(--color-white);
+  font-size: 0.9rem;
+}
+
+/* ============================================================================
+   14. UTILITIES & HELPERS
+   ============================================================================ */
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.mb-1 {
+  margin-bottom: var(--spacing-md);
+}
+
+.mb-2 {
+  margin-bottom: var(--spacing-lg);
+}
+
+.mb-3 {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.mt-1 {
+  margin-top: var(--spacing-md);
+}
+
+.mt-2 {
+  margin-top: var(--spacing-lg);
+}
+
+.mt-3 {
+  margin-top: var(--spacing-2xl);
+}
+
+.floating-cart-badge {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.floating-cart-badge a {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  font-weight: bold;
+  transition: var(--transition);
+}
+
+.floating-cart-badge a:hover {
+  transform: scale(1.1);
+  background-color: var(--color-primary);
+}
+
+.page-actions {
+  display: flex;
+  gap: var(--spacing-lg);
+  justify-content: center;
+  margin-top: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
+.category-filter {
+  text-align: center;
+  margin: var(--spacing-xl) 0;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-buttons .btn {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 0.95rem;
+}
+
+.filter-buttons .btn.active {
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+}
+
+/* ============================================================================
+   15. CART STYLES
+   ============================================================================ */
+
+.cart-table {
+  width: 100%;
+}
+
+.item-name {
+  font-weight: 600;
+}
+
+.item-type {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: normal;
+}
+
+.item-quantity input {
+  width: 70px;
+  padding: var(--spacing-sm);
+  text-align: center;
+}
+
+.cart-total-row {
+  background-color: var(--color-secondary-light);
+  font-weight: 600;
+}
+
+.cart-actions {
+  margin-top: var(--spacing-lg);
+  text-align: center;
+}
+
+.checkout-form {
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-lg);
+  border-top: 2px solid var(--color-secondary-light);
+}
+
+.checkout-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.bank-info {
+  background-color: var(--color-secondary-light);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.checkout-actions {
+  display: flex;
+  gap: var(--spacing-lg);
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+/* ============================================================================
+   16. RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .product-grid,
+  .package-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--spacing-lg);
+  }
+
+  .page-content {
+    padding: 0 var(--spacing-md);
+  }
+
+  main {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    font-size: 0.95rem;
+  }
+
+  .header-container {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-md);
+  }
+
+  .logo-section {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .main-navigation {
+    width: 100%;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .nav-link {
+    display: block;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .product-grid,
+  .package-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  .product-card,
+  .package-card {
+    padding: var(--spacing-md);
+  }
+
+  table {
+    font-size: 0.9rem;
+  }
+
+  th,
+  td {
+    padding: var(--spacing-sm);
+  }
+
+  button,
+  .btn {
+    width: 100%;
+    padding: var(--spacing-md);
+  }
+
+  .checkout-actions {
+    flex-direction: column;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    font-size: 0.9rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  main {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+  }
+
+  .page-content {
+    margin: var(--spacing-lg) auto;
+    padding: 0 var(--spacing-sm);
+  }
+
+  .product-image {
+    height: 150px;
+  }
+
+  .product-grid,
+  .package-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .cart-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .quantity-input {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-actions {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+}
+
+/* ============================================================================
+   17. ADMIN LOGIN
+   ============================================================================ */
+.admin-login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+}
+
+.admin-login-container form {
+    background: var(--color-white);
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* ============================================================================
+   17. ADMIN PANEL SPECIFIC STYLES
+   ============================================================================ */
+
+.admin-header {
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-text-primary) 100%);
+  color: var(--color-secondary-light);
+  text-align: center;
+}
+
+.admin-header h1 {
+  color: #b08264;  /* coklat terang */
+}
+
+
+.admin-nav a {
+  color: var(--color-secondary-light);
+  text-align: center;
+}
+
+.admin-nav a:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin: var(--spacing-xl) 0;
+}
+
+.stat-card {
+  background: var(--color-white);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border-top: 4px solid var(--color-secondary);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-primary);
+}
+
+.stat-label {
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-sm);
+}
+
+/* ============================================================================
+   18. STATUS BADGES
+   ============================================================================ */
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.pending {
+  background-color: #fff7e6;
+  color: #d48806;
+  border: 1px solid #ffd666;
+}
+
+.status-badge.approved {
+  background-color: #f6ffed;
+  color: #389e0d;
+  border: 1px solid #b7eb8f;
+}
+
+.status-badge.rejected {
+  background-color: #fff1f0;
+  color: #cf1322;
+  border: 1px solid #ffa39e;
+}
+
+.status-badge.completed {
+  background-color: #f6ffed;
+  color: #389e0d;
+  border: 1px solid #b7eb8f;
+}
+
+/* ============================================================================
+   END OF STYLESHEET
+   ============================================================================ */
