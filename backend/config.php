@@ -5,7 +5,7 @@
  */
 
 // Database Configuration
-define('DB_HOST', '192.168.122.288');
+define('DB_HOST', '192.168.122.228');
 define('DB_USER', 'adamsbakery');
 define('DB_PASS', 'Adamsbakery123!');
 define('DB_NAME', 'adamsbakery');
