@@ -89,22 +89,49 @@ class InputSanitizer
      */
     public static function validateFileUpload($file, $allowedMimes = null, $maxSize = null)
     {
-        if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
-            return ['valid' => false, 'error' => 'File upload error'];
+        if (!isset($file)) {
+            return ['valid' => false, 'error' => 'File tidak ditemukan'];
+        }
+
+        // Check upload error
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $uploadErrors = [
+                UPLOAD_ERR_INI_SIZE => 'File terlalu besar (melebihi batas server)',
+                UPLOAD_ERR_FORM_SIZE => 'File terlalu besar',
+                UPLOAD_ERR_PARTIAL => 'File tidak sepenuhnya terupload',
+                UPLOAD_ERR_NO_FILE => 'Tidak ada file yang dipilih',
+                UPLOAD_ERR_NO_TMP_DIR => 'Direktori sementara tidak tersedia',
+                UPLOAD_ERR_CANT_WRITE => 'Gagal menulis file',
+                UPLOAD_ERR_EXTENSION => 'Ekstensi file tidak diizinkan',
+            ];
+            return ['valid' => false, 'error' => $uploadErrors[$file['error']] ?? 'Upload error'];
         }
 
         // Check file size
         $maxSize = $maxSize ?? MAX_FILE_SIZE;
         if ($file['size'] > $maxSize) {
-            return ['valid' => false, 'error' => 'File size exceeds limit'];
+            return ['valid' => false, 'error' => 'Ukuran file melebihi limit (max 5MB)'];
         }
 
-        // Check MIME type
+        // Check if file exists
+        if (!file_exists($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+            return ['valid' => false, 'error' => 'File upload tidak valid'];
+        }
+
         $allowedMimes = $allowedMimes ?? ALLOWED_MIME_TYPES;
-        $fileMime = mime_content_type($file['tmp_name']);
+        
+        // Try finfo first (most reliable)
+        if (function_exists('finfo_file')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $fileMime = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+        } else {
+            // Fallback to mime_content_type if finfo not available
+            $fileMime = mime_content_type($file['tmp_name']);
+        }
         
         if (!in_array($fileMime, $allowedMimes)) {
-            return ['valid' => false, 'error' => 'Invalid file type'];
+            return ['valid' => false, 'error' => "Tipe file tidak diizinkan. Hanya JPG, PNG, GIF yang diperbolehkan. (Detected: $fileMime)"];
         }
 
         return ['valid' => true];

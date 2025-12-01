@@ -51,28 +51,48 @@ if ($totalAmount <= 0 || $transferAmount <= 0) {
 
 $buktiPembayaran = null;
 
-if (isset($_FILES['transfer_proof']) && $_FILES['transfer_proof']['error'] !== UPLOAD_ERR_NO_FILE) {
+if (isset($_FILES['transfer_proof'])) {
+    // Check if file was actually provided
+    if ($_FILES['transfer_proof']['error'] === UPLOAD_ERR_NO_FILE) {
+        redirectWithMessage('../checkout.php', 'Bukti pembayaran harus diunggah', 'error');
+    }
+
     $fileValidation = InputSanitizer::validateFileUpload($_FILES['transfer_proof']);
     
     if (!$fileValidation['valid']) {
         redirectWithMessage('../checkout.php', $fileValidation['error'], 'error');
     }
     
-    // Create upload directory
+    // Create upload directory with proper error handling
     $uploadDir = __DIR__ . '/../uploads/bukti_pembayaran/';
+    
     if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
+        if (!mkdir($uploadDir, 0755, true)) {
+            redirectWithMessage('../checkout.php', 'Gagal membuat direktori upload. Hubungi admin.', 'error');
+        }
+    }
+    
+    // Verify directory is writable
+    if (!is_writable($uploadDir)) {
+        redirectWithMessage('../checkout.php', 'Direktori upload tidak dapat ditulis. Hubungi admin.', 'error');
     }
     
     // Generate safe file name
     $fileName = InputSanitizer::generateSafeFileName($_FILES['transfer_proof']['name']);
     $filePath = $uploadDir . $fileName;
     
-    if (move_uploaded_file($_FILES['transfer_proof']['tmp_name'], $filePath)) {
-        $buktiPembayaran = $fileName;
-    } else {
-        redirectWithMessage('../checkout.php', 'Gagal mengunggah file bukti pembayaran', 'error');
+    // Move uploaded file with error handling
+    if (!move_uploaded_file($_FILES['transfer_proof']['tmp_name'], $filePath)) {
+        error_log("Upload failed for: " . $_FILES['transfer_proof']['name'] . " | Error: " . $_FILES['transfer_proof']['error']);
+        redirectWithMessage('../checkout.php', 'Gagal mengunggah file bukti pembayaran. Coba lagi atau hubungi admin.', 'error');
     }
+    
+    // Verify file was actually written
+    if (!file_exists($filePath)) {
+        redirectWithMessage('../checkout.php', 'File tidak berhasil disimpan. Coba lagi.', 'error');
+    }
+    
+    $buktiPembayaran = $fileName;
 }
 
 $status = 'pending';
