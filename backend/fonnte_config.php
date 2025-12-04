@@ -7,10 +7,10 @@
 // define('FONNTE_TOKEN', getenv('FONNTE_TOKEN') ?: 'your_token_here');
 
 define('FONNTE_BASE_URL', 'https://api.fonnte.com');
-define('FONNTE_TOKEN', 'mJXKDhRoHJKTG6i2WG5H'); // GANTI dengan token Fonnte Anda
+define('FONNTE_TOKEN', '7fwAsmFfCRkGAdTr3p86'); // GANTI dengan token Fonnte Anda
 
 // Nomor fallback jika nomor pelanggan tidak tersedia
-define('FONNTE_FALLBACK_RECIPIENT', '+628123456789'); // GANTI dengan nomor fallback Anda
+define('FONNTE_FALLBACK_RECIPIENT', '+6281548362773'); // GANTI dengan nomor fallback Anda
 
 // Flag untuk enable/disable WhatsApp notifications
 define('FONNTE_ENABLE_NOTIFICATIONS', true);

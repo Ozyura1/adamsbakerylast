@@ -22,6 +22,7 @@
                     Kabupaten Tegal, Jawa Tengah 52472
                 </p>
                 <p>Email: info@adambakery.com</p>
+                <p>Telepon: +62 815-4836-2773</p>
             </div>
             
             <div class="footer-section">

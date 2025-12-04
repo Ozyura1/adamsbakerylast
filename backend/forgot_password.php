@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update->execute();
 
         // Buat link reset password
-        $resetLink = "http://localhost/adamsbakeryiclikiwir/backend/reset_password.php?token=$token";
+        $resetLink = "http://https://adambakery.thebamfams.web.id/adamsbakery/backend/reset_password.php?token=$token";
 
 
         echo "<p>Link reset password:</p>";

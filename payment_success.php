@@ -68,7 +68,7 @@ if ($transaction_id) {
                 }
 
                 $message = "Hai {$nama},\n\n";
-                $message .= "Terima kasih telah memesan di *Adams Bakery* 🍞\n\n";
+                $message .= "Terima kasih telah memesan di *Adam's Bakery* 🍞\n\n";
                 $message .= "Pesananmu telah kami terima dan sedang kami proses.\n\n";
                 $message .= "📦 *Nomor Pesanan:* #{$order_id}\n";
                 
@@ -80,7 +80,7 @@ if ($transaction_id) {
                 $message .= "📊 *Status:* {$status}\n\n";
                 $message .= "Jika sudah melakukan pembayaran, silakan tunggu konfirmasi dari kami (1-2 jam kerja).\n\n";
                 $message .= "Pertanyaan? Hubungi kami kapan saja.\n\n";
-                $message .= "Salam hangat,\n*Adams Bakery* 🥐";
+                $message .= "Salam hangat,\n*Adam's Bakery* 🥐";
 
                 // Send WhatsApp message
                 $wa_result = $gateway->sendMessage($recipient, $message);
