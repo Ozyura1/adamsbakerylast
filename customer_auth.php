@@ -4,7 +4,7 @@
  * Handles login and registration with security best practices
  */
 
-require_once 'includes/init.php';
+require_once __DIR__ . '/includes/init.php';
 
 define('AUTH_ACTION_LOGIN', 'login');
 define('AUTH_ACTION_REGISTER', 'register');
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     logActivity('REGISTRATION_SUCCESS', 'New customer registered: ' . $email);
                     
                     // KIRIM OTP KE EMAIL
-                    require_once 'backend/mailer.php';
+                    require_once __DIR__ . '/backend/mailer.php';
                     sendVerificationEmail($email, $otp);
 
                     $_SESSION['pending_email'] = $email;
@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <?php require_once 'includes/header.php'; ?>
+    <?php require_once __DIR__ . '/includes/header.php'; ?>
     
     <main class="auth-container">
         <div class="auth-box">
@@ -253,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         </div>
     </main>
     
-    <?php require_once 'includes/footer.php'; ?>
+    <?php require_once __DIR__ . '/includes/footer.php'; ?>
     
     <script>
         function switchAuthMode(mode) {
