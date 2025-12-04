@@ -69,7 +69,7 @@ if ($transaction_id) {
 
                 $message = "Hai {$nama},\n\n";
                 $message .= "Terima kasih telah memesan di *Adam's Bakery* 🍞\n\n";
-                $message .= "Pesananmu telah kami terima dan sedang kami proses.\n\n";
+                $message .= "Ini adalah notifikasi *Penerimaan Pesanan* — pesanan Anda telah kami terima dan berada dalam antrean untuk diproses.\n\n";
                 $message .= "📦 *Nomor Pesanan:* #{$order_id}\n";
                 
                 if ($items_text) {
@@ -77,7 +77,8 @@ if ($transaction_id) {
                 }
                 
                 $message .= "\n💰 *Total:* {$total}\n";
-                $message .= "📊 *Status:* {$status}\n\n";
+                $message .= "📊 *Status saat ini:* {$status}\n\n";
+                $message .= "Catatan: Anda akan menerima notifikasi tambahan jika status pesanan berubah (mis. dikonfirmasi atau dibatalkan) oleh admin.\n\n";
                 $message .= "Jika sudah melakukan pembayaran, silakan tunggu konfirmasi dari kami (1-2 jam kerja).\n\n";
                 $message .= "Pertanyaan? Hubungi kami kapan saja.\n\n";
                 $message .= "Salam hangat,\n*Adam's Bakery* 🥐";

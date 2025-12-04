@@ -2,6 +2,10 @@
 session_start();
 include '../backend/db.php';
 
+// Fonnte WhatsApp gateway for sending notifications when status changes
+require_once __DIR__ . '/../backend/fonnte_config.php';
+require_once __DIR__ . '/../backend/FonnteGateway.php';
+
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit();
@@ -15,6 +19,70 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_status'])) {
     $sql = "UPDATE transactions SET status = '$new_status' WHERE id = '$transaction_id'";
     if ($conn->query($sql)) {
         $success = "Status transaksi berhasil diupdate!";
+
+        // Send WhatsApp notification according to the status selected by admin
+        if (defined('FONNTE_ENABLE_NOTIFICATIONS') && FONNTE_ENABLE_NOTIFICATIONS) {
+            try {
+                $gateway = new FonnteGateway();
+
+                // Fetch transaction details
+                $tranRes = $conn->query("SELECT * FROM transactions WHERE id = '$transaction_id'");
+                if ($tranRes && $tranRes->num_rows > 0) {
+                    $tran = $tranRes->fetch_assoc();
+                    $phone_raw = $tran['phone'] ?? null;
+
+                    if (empty($phone_raw)) {
+                        error_log("Warning: Nomor telepon kosong untuk transaksi #" . $transaction_id);
+                        $recipient = defined('FONNTE_FALLBACK_RECIPIENT') ? FONNTE_FALLBACK_RECIPIENT : null;
+                    } else {
+                        $recipient = $gateway->normalizePhoneNumber($phone_raw);
+                    }
+
+                    if ($recipient) {
+                        $order_id = $tran['id'];
+                        $nama = $tran['nama_pembeli'] ?? 'Pelanggan';
+                        $total = isset($tran['total_amount']) ? 'Rp ' . number_format($tran['total_amount'], 0, ',', '.') : 'N/A';
+
+                        // Map status to display text
+                        $display_status = ucfirst($new_status);
+
+                        // Build message similar to payment_success.php but reflecting new status
+                        $message = "Hai {$nama},\n\n";
+                        $message .= "Ini adalah pemberitahuan mengenai pesanan Anda di *Adam's Bakery* 🍞\n\n";
+                        $message .= "📦 *Nomor Pesanan:* #{$order_id}\n";
+                        $message .= "\n💰 *Total:* {$total}\n";
+                        $message .= "📊 *Status:* {$display_status}\n\n";
+
+                        if ($new_status === 'confirmed') {
+                            $message .= "Pembayaran Anda telah dikonfirmasi. Invoice dan detail pesanan bisa dilihat di: " . (isset($_SERVER['HTTP_HOST']) ? 'https://' . $_SERVER['HTTP_HOST'] : '') . "/invoice.php?transaction_id={$order_id}\n\n";
+                        } elseif ($new_status === 'cancelled') {
+                            $message .= "Sayangnya pesanan Anda dibatalkan. Jika ini kesalahan, silakan hubungi kami untuk klarifikasi.\n\n";
+                        } else {
+                            $message .= "Status pesanan Anda diperbarui menjadi *{$display_status}*.\n\n";
+                        }
+
+                        $message .= "Pertanyaan? Hubungi kami kapan saja.\n\n";
+                        $message .= "Salam hangat,\n*Adam's Bakery* 🥐";
+
+                        $wa_result = $gateway->sendMessage($recipient, $message);
+                        if ($wa_result['status']) {
+                            $success .= ' Notifikasi WhatsApp berhasil dikirim ke pelanggan.';
+                            error_log("WhatsApp notifikasi berhasil dikirim ke {$recipient} untuk order #{$order_id}");
+                        } else {
+                            error_log("WhatsApp notifikasi gagal untuk order #{$order_id}: " . json_encode($wa_result));
+                            $success .= ' Namun notifikasi WhatsApp gagal dikirim.';
+                        }
+                    } else {
+                        error_log("Error: Tidak bisa menentukan nomor penerima untuk transaksi #{$transaction_id}");
+                        $success .= ' Namun notifikasi WhatsApp tidak dikirim (nomor tidak valid).';
+                    }
+                }
+
+            } catch (Exception $e) {
+                error_log('Exception saat mengirim WhatsApp pada update status: ' . $e->getMessage());
+                $success .= ' Namun terjadi kesalahan saat mengirim notifikasi WhatsApp.';
+            }
+        }
     } else {
         $error = "Error: " . $conn->error;
     }
