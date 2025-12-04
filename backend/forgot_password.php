@@ -23,8 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update->bind_param("sss", $token, $expires, $email);
         $update->execute();
 
-        // Buat link reset password
-        $resetLink = "http://https://adambakery.thebamfams.web.id/adamsbakery/backend/reset_password.php?token=$token";
+        // Buat link reset password (gunakan skema dan host saat ini jika tersedia)
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'adambakery.thebamfams.web.id';
+        $resetLink = $scheme . '://' . $host . '/adamsbakery/backend/reset_password.php?token=' . $token;
 
 
         echo "<p>Link reset password:</p>";
