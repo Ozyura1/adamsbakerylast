@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              // Redirect user to the correct customer auth page on successful reset
              $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
              $host = $_SERVER['HTTP_HOST'] ?? 'adambakery.thebamfams.web.id';
-             $redirectUrl = $scheme . '://' . $host . '/adamsbakery/customer_auth.php';
+             $redirectUrl = $scheme . '://' . $host . '/adamsbakery/backend/customer_auth.php';
 
              echo "<script>
               alert('Password berhasil direset! Silakan login kembali.');
