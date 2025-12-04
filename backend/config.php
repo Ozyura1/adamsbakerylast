@@ -11,7 +11,7 @@ define('DB_PASS', 'Adamsbakery123!');
 define('DB_NAME', 'adamsbakery');
 
 // Application Configuration
-define('APP_NAME', 'Adam Bakery');
+define('APP_NAME', "Adam's Bakery");
 define('APP_DEBUG', true);
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB

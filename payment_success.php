@@ -4,6 +4,7 @@ include 'includes/header.php';
 
 require_once __DIR__ . '/backend/fonnte_config.php';
 require_once __DIR__ . '/backend/FonnteGateway.php';
+require_once __DIR__ . '/backend/admin_notifier.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -120,6 +121,16 @@ if ($transaction_id) {
     // Clear cart after successful order
     if (isset($_SESSION['cart'])) {
         unset($_SESSION['cart']);
+    }
+
+    // Send admin notification for new order
+    if (!empty($transaction)) {
+        $notifier = new AdminNotifier($conn);
+        $admin_notif_result = $notifier->notifyNewOrder($transaction_id, true);
+        
+        if (!$admin_notif_result['status']) {
+            error_log("Payment success page: Admin notification failed - " . ($admin_notif_result['reason'] ?? $admin_notif_result['error'] ?? 'Unknown'));
+        }
     }
 }
 ?>

@@ -15,5 +15,8 @@ define('FONNTE_FALLBACK_RECIPIENT', '+6281548362773'); // GANTI dengan nomor fal
 // Flag untuk enable/disable WhatsApp notifications
 define('FONNTE_ENABLE_NOTIFICATIONS', true);
 
+// Admin WhatsApp number untuk menerima notifikasi order
+define('ADMIN_WA_NUMBER', '+62852257791194');
+
 // Timeout untuk API call (dalam detik)
 define('FONNTE_TIMEOUT', 15);

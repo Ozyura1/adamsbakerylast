@@ -1,6 +1,7 @@
 <?php
 include 'db.php';
 include 'csrf.php';
+require_once __DIR__ . '/admin_notifier.php';
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -42,12 +43,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // ====== CEK BERHASIL ATAU TIDAK ======
     if ($stmt->execute()) {
+        $last_insert_id = $stmt->insert_id;
+        
+        // Send admin notification for custom orders
+        if ($jenis_kontak === 'custom_order') {
+            $notifier = new AdminNotifier($conn);
+            $admin_notif_result = $notifier->notifyNewCustomOrder($last_insert_id, true);
+            
+            if (!$admin_notif_result['status']) {
+                error_log("Process contact: Admin notification failed for custom order #$last_insert_id - " . ($admin_notif_result['reason'] ?? $admin_notif_result['error'] ?? 'Unknown'));
+            }
+        }
+
         switch ($jenis_kontak) {
             case 'custom_order':
                 echo "<div style='max-width: 600px; margin: 2rem auto; padding: 2rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px;'>";
                 echo "<h3 style='color: #155724; margin-top: 0;'>Permintaan Pesanan Kustom Diterima!</h3>";
                 echo "<p style='color: #155724;'>Terima kasih <strong>" . htmlspecialchars($nama) . "</strong>, permintaan pesanan kustom Anda sudah kami terima!</p>";
-                echo "<p style='color: #155724;'>Tim kami akan menghubungi Anda dalam 1-2 hari kerja untuk membahas detail dan memberikan penawaran harga.</p>";
+                echo "<p style='color: #155724;'>Tim kami akan menghubungi Anda dalam 1-2 jam kerja untuk membahas detail dan memberikan penawaran harga.</p>";
                 if ($event_date) {
                     echo "<p style='color: #155724;'><strong>Tanggal acara:</strong> " . date('d M Y', strtotime($event_date)) . "</p>";
                 }
