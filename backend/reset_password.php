@@ -31,9 +31,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $update->bind_param("ss", $new_password, $email);
             $update->execute();
 
-           echo "<script>
-                alert('Password berhasil direset! Silakan login kembali.');
-                window.location.href = '/adamsbakeryiclikiwir/customer_auth.php';
+             // Redirect user to the correct customer auth page on successful reset
+             $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+             $host = $_SERVER['HTTP_HOST'] ?? 'adambakery.thebamfams.web.id';
+             $redirectUrl = $scheme . '://' . $host . '/adamsbakery/customer_auth.php';
+
+             echo "<script>
+              alert('Password berhasil direset! Silakan login kembali.');
+              window.location.href = '" . htmlspecialchars($redirectUrl, ENT_QUOTES) . "';
             </script>";
 
             exit;
