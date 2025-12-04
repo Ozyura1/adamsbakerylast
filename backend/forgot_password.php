@@ -23,10 +23,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update->bind_param("sss", $token, $expires, $email);
         $update->execute();
 
-        // Buat link reset password (gunakan skema dan host saat ini jika tersedia)
+        // Buat link reset password (gunakan skema, host dan direktori saat ini)
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'adambakery.thebamfams.web.id';
-        $resetLink = $scheme . '://' . $host . '/adamsbakery/backend/reset_password.php?token=' . $token;
+        // Gunakan direktori dari request saat ini supaya path cocok dengan deployment (hindari hardcoded)
+        $currentDir = dirname($_SERVER['REQUEST_URI'] ?? '/backend');
+        $currentDir = rtrim($currentDir, '/');
+        // Jika dirname() mengembalikan '.' atau empty, fallback ke '/backend'
+        if ($currentDir === '.' || $currentDir === '') {
+          $currentDir = '/backend';
+        }
+        $resetLink = $scheme . '://' . $host . $currentDir . '/reset_password.php?token=' . $token;
 
 
         echo "<p>Link reset password:</p>";
