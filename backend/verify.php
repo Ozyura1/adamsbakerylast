@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "
                 <h2 style='color:$styleColor;'>✅ Verifikasi Berhasil!</h2>
                 <p>Akun Anda telah aktif. Anda akan diarahkan ke halaman login dalam <b>3 detik</b>.</p>
-                <a href='../login.php?verified=1' style='
+                <a href='https://adambakery.thebamfams.web.id/customer_auth.php?verified=1' style='
                     display:inline-block;
                     margin-top:10px;
                     padding:10px 20px;
@@ -70,9 +70,7 @@ $conn->close();
     <meta charset="UTF-8">
     <title>Verifikasi OTP</title>
     <?php if ($redirect): ?>
-        <meta http-equiv="refresh" content="3;url=../login.php?verified=1"><a href='../customer_auth.php?verified=1'>
-        <meta http-equiv="refresh" content="3;url=../customer_auth.php?verified=1">
-
+        <meta http-equiv="refresh" content="3;url=https://adambakery.thebamfams.web.id/customer_auth.php?verified=1">
     <?php endif; ?>
 </head>
 <body style="font-family: Arial, sans-serif; background: #f5f5f5;">

@@ -79,6 +79,7 @@ class AdminNotifier
             $order_id = $transaction['id'];
             $nama = $transaction['nama_pembeli'] ?? 'Unknown';
             $phone = $transaction['phone'] ?? 'N/A';
+            $alamat = trim($transaction['alamat'] ?? 'N/A');
             $total = 'Rp ' . number_format($transaction['total_amount'], 0, ',', '.');
             $status = ucfirst($transaction['status'] ?? 'pending');
             $created_at = date('d/m/Y H:i', strtotime($transaction['created_at']));
@@ -87,6 +88,7 @@ class AdminNotifier
             $message .= "📦 *Order ID:* #$order_id\n";
             $message .= "👤 *Nama Pembeli:* $nama\n";
             $message .= "📱 *No. WA:* $phone\n";
+            $message .= "🏠 *Alamat:* $alamat\n";
             $message .= "💰 *Total:* $total\n";
             $message .= "📊 *Status:* $status\n";
             $message .= "📅 *Waktu:* $created_at\n";
@@ -97,11 +99,18 @@ class AdminNotifier
 
             $message .= "\n🔗 Buka Dashboard: https://adambakery.thebamfams.web.id/adamsbakery/admin/login.php";
 
+            // Respect per-order disable flag
+            if (!empty($transaction['admin_notifications_disabled'])) {
+                error_log("AdminNotifier: Notifications disabled for transaction #$transaction_id");
+                return ['status' => false, 'reason' => 'Notifications disabled for this order'];
+            }
+
             // Send WhatsApp
             $wa_result = $this->gateway->sendMessage($this->adminWaNumber, $message);
 
-            // Log result to database
-            $this->logNotification($transaction_id, 'order_new', $wa_result['status'], $wa_result['message_id'] ?? null);
+            // Log result to database (including raw response)
+            $raw = $wa_result['raw_response'] ?? (isset($wa_result['error']) ? json_encode(['error' => $wa_result['error']]) : null);
+            $this->logNotification($transaction_id, 'order_new', $wa_result['status'], $wa_result['message_id'] ?? null, 'transactions', $raw);
 
             if ($wa_result['status']) {
                 error_log("AdminNotifier: Notification sent successfully for order #$order_id");
@@ -171,11 +180,18 @@ class AdminNotifier
 
             $message .= "\n🔗 Balas/buat quote di: https://adambakery.thebamfams.web.id/adamsbakery/admin/login.php";
 
+            // Respect per-order disable flag
+            if (!empty($order['admin_notifications_disabled'])) {
+                error_log("AdminNotifier: Notifications disabled for custom order #$kontak_id");
+                return ['status' => false, 'reason' => 'Notifications disabled for this custom order'];
+            }
+
             // Send WhatsApp
             $wa_result = $this->gateway->sendMessage($this->adminWaNumber, $message);
 
-            // Log result to database
-            $this->logNotification($order_id, 'custom_order_new', $wa_result['status'], $wa_result['message_id'] ?? null, 'kontak');
+            // Log result to database (including raw response)
+            $raw = $wa_result['raw_response'] ?? (isset($wa_result['error']) ? json_encode(['error' => $wa_result['error']]) : null);
+            $this->logNotification($order_id, 'custom_order_new', $wa_result['status'], $wa_result['message_id'] ?? null, 'kontak', $raw);
 
             if ($wa_result['status']) {
                 error_log("AdminNotifier: Custom order notification sent successfully for #$order_id");
@@ -194,23 +210,29 @@ class AdminNotifier
     /**
      * Log notification result to database
      */
-    private function logNotification($ref_id, $type, $success, $message_id = null, $table = 'transactions')
+    private function logNotification($ref_id, $type, $success, $message_id = null, $table = 'transactions', $raw_response = null)
     {
         try {
+            $notified_status = $success ? 'sent' : 'failed';
+
+            // Update transactions/kontak summary columns
             if ($table === 'transactions') {
                 $stmt = $this->conn->prepare("UPDATE transactions SET admin_notified_at = NOW(), admin_notified_status = ? WHERE id = ?");
-                $notified_status = $success ? 'sent' : 'failed';
                 $stmt->bind_param("si", $notified_status, $ref_id);
+                $stmt->execute();
+                $stmt->close();
             } else if ($table === 'kontak') {
                 $stmt = $this->conn->prepare("UPDATE kontak SET admin_notified_at = NOW(), admin_notified_status = ? WHERE id = ?");
-                $notified_status = $success ? 'sent' : 'failed';
                 $stmt->bind_param("si", $notified_status, $ref_id);
-            }
-            
-            if (isset($stmt)) {
                 $stmt->execute();
                 $stmt->close();
             }
+
+            // Insert detailed record into wa_notifications
+            $ins = $this->conn->prepare("INSERT INTO wa_notifications (ref_table, ref_id, type, status, message_id, raw_response, sent_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+            $ins->bind_param("sissss", $table, $ref_id, $type, $notified_status, $message_id, $raw_response);
+            $ins->execute();
+            $ins->close();
         } catch (Exception $e) {
             error_log("AdminNotifier: Failed to log notification: " . $e->getMessage());
         }

@@ -88,6 +88,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_status'])) {
     }
 }
 
+// Handle toggle admin notification per-order
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['toggle_admin_notif'])) {
+    $transaction_id = $conn->real_escape_string($_POST['transaction_id']);
+    $disabled = isset($_POST['disable']) && $_POST['disable'] == '1' ? 1 : 0;
+    $sql = "UPDATE transactions SET admin_notifications_disabled = $disabled WHERE id = '$transaction_id'";
+    if ($conn->query($sql)) {
+        $success = 'Pengaturan notifikasi admin berhasil diperbarui.';
+    } else {
+        $error = 'Error: ' . $conn->error;
+    }
+}
+
+// Handle resend admin notification for a transaction
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['resend_admin_notif'])) {
+    $transaction_id = intval($_POST['transaction_id']);
+    try {
+        require_once __DIR__ . '/../backend/admin_notifier.php';
+        $notifier = new AdminNotifier($conn);
+        $res = $notifier->notifyNewOrder($transaction_id, true);
+        if ($res['status']) {
+            $success = 'Notifikasi ulang berhasil dikirim.';
+        } else {
+            $error = 'Gagal mengirim notifikasi ulang: ' . ($res['reason'] ?? $res['error'] ?? 'Unknown');
+        }
+    } catch (Exception $e) {
+        $error = 'Exception: ' . $e->getMessage();
+    }
+}
+
 // Get all transactions
 $transactions = $conn->query("SELECT * FROM transactions ORDER BY created_at DESC");
 ?>
@@ -187,15 +216,34 @@ $transactions = $conn->query("SELECT * FROM transactions ORDER BY created_at DES
                 <td><?php echo date('d/m/Y H:i', strtotime($transaction['created_at'])); ?></td>
 
                 <td>
-                    <form method="post" style="display: inline;">
-                        <input type="hidden" name="transaction_id" value="<?php echo $transaction['id']; ?>">
-                        <select name="status" onchange="this.form.submit()">
-                            <option value="pending" <?php echo $transaction['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
-                            <option value="confirmed" <?php echo $transaction['status'] == 'confirmed' ? 'selected' : ''; ?>>Confirmed</option>
-                            <option value="cancelled" <?php echo $transaction['status'] == 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
-                        </select>
-                        <input type="hidden" name="update_status" value="1">
-                    </form>
+                    <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
+                        <form method="post" style="display: inline;">
+                            <input type="hidden" name="transaction_id" value="<?php echo $transaction['id']; ?>">
+                            <select name="status" onchange="this.form.submit()">
+                                <option value="pending" <?php echo $transaction['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                <option value="confirmed" <?php echo $transaction['status'] == 'confirmed' ? 'selected' : ''; ?>>Confirmed</option>
+                                <option value="cancelled" <?php echo $transaction['status'] == 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                            </select>
+                            <input type="hidden" name="update_status" value="1">
+                        </form>
+
+                        <!-- Toggle admin notification for this order -->
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="transaction_id" value="<?php echo $transaction['id']; ?>">
+                            <input type="hidden" name="toggle_admin_notif" value="1">
+                            <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                                <input type="checkbox" name="disable" value="1" onchange="this.form.submit()" <?php echo !empty($transaction['admin_notifications_disabled']) ? 'checked' : ''; ?>>
+                                <span style="font-size:12px;">Disable WA</span>
+                            </label>
+                        </form>
+
+                        <!-- Resend notification button -->
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="transaction_id" value="<?php echo $transaction['id']; ?>">
+                            <input type="hidden" name="resend_admin_notif" value="1">
+                            <button type="submit" style="padding:6px 8px; background:#007bff; color:#fff; border:none; border-radius:4px;">Resend</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             <?php endwhile; ?>
