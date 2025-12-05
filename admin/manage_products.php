@@ -1,4 +1,16 @@
 <?php
+// Flash helper: sets session message and redirects back to this page
+function flashAndRedirect($type, $message) {
+    if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+    if ($type === 'error') {
+        $_SESSION['error'] = $message;
+    } else {
+        $_SESSION['info'] = $message;
+    }
+    header('Location: manage_products.php');
+    exit();
+}
+
 // Helper function for image upload validation
 function validateAndUploadImage($file, $targetDir = "../uploads/") {
     if (!isset($file) || $file['error'] != 0) {
@@ -10,14 +22,14 @@ function validateAndUploadImage($file, $targetDir = "../uploads/") {
     // Validate file size (max 5MB)
     $maxFileSize = 5 * 1024 * 1024; // 5MB
     if ($file['size'] > $maxFileSize) {
-        die("File terlalu besar. Maksimal ukuran: 5MB");
+        flashAndRedirect('error', 'File terlalu besar. Maksimal ukuran: 5MB');
     }
     
     // Validate file extension
     $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     $allowedExts = ['jpg', 'jpeg', 'png'];
     if (!in_array($fileExt, $allowedExts)) {
-        die("Tipe file tidak diizinkan. Hanya JPG, JPEG, PNG yang diperbolehkan.");
+        flashAndRedirect('error', 'Tipe file tidak diizinkan. Hanya JPG, JPEG, PNG yang diperbolehkan.');
     }
     
     // Validate MIME type
@@ -27,7 +39,7 @@ function validateAndUploadImage($file, $targetDir = "../uploads/") {
     
     $allowedMimes = ['image/jpeg', 'image/png'];
     if (!in_array($mimeType, $allowedMimes)) {
-        die("MIME type tidak valid. Hanya JPEG dan PNG yang diperbolehkan.");
+        flashAndRedirect('error', 'MIME type tidak valid. Hanya JPEG dan PNG yang diperbolehkan.');
     }
     
     // Generate secure filename
@@ -36,7 +48,7 @@ function validateAndUploadImage($file, $targetDir = "../uploads/") {
     
     // Move uploaded file
     if (!move_uploaded_file($file['tmp_name'], $filePath)) {
-        die("Gagal upload file");
+        flashAndRedirect('error', 'Gagal upload file');
     }
     
     return $fileName;
@@ -82,9 +94,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param('ssisss', $nama, $harga, $category_id, $kategori_nama, $deskripsi, $imageName);
                 if (!$stmt->execute()) {
-                    die("Error INSERT: " . $stmt->error);
+                    error_log('manage_products.php INSERT error: ' . $stmt->error);
+                    flashAndRedirect('error', 'Gagal menyimpan produk. Silakan coba lagi.');
                 }
                 $stmt->close();
+                flashAndRedirect('info', 'Produk berhasil ditambahkan.');
                 break;
 
             case 'delete':
@@ -93,6 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->bind_param('i', $id);
                 $stmt->execute();
                 $stmt->close();
+                flashAndRedirect('info', 'Produk berhasil dihapus.');
                 break;
 
             case 'update':
@@ -140,9 +155,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
 
                 if (!$stmt->execute()) {
-                    die('Error UPDATE: ' . $stmt->error);
+                    error_log('manage_products.php UPDATE error: ' . $stmt->error);
+                    flashAndRedirect('error', 'Gagal memperbarui produk. Silakan coba lagi.');
                 }
                 $stmt->close();
+                flashAndRedirect('info', 'Produk berhasil diperbarui.');
                 break;
 
         }
