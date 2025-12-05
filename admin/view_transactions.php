@@ -13,101 +13,133 @@ if (!isset($_SESSION['admin_id'])) {
 
 // Handle status updates
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_status'])) {
-    $transaction_id = $conn->real_escape_string($_POST['transaction_id']);
-    $new_status = $conn->real_escape_string($_POST['status']);
-    
-    $sql = "UPDATE transactions SET status = '$new_status' WHERE id = '$transaction_id'";
-    if ($conn->query($sql)) {
-        $success = "Status transaksi berhasil diupdate!";
+    try {
+        $transaction_id = intval($_POST['transaction_id'] ?? 0);
+        $new_status = $conn->real_escape_string($_POST['status'] ?? 'pending');
 
-        // Send WhatsApp notification according to the status selected by admin
-        if (defined('FONNTE_ENABLE_NOTIFICATIONS') && FONNTE_ENABLE_NOTIFICATIONS) {
-            try {
-                $gateway = new FonnteGateway();
+        $stmt = $conn->prepare("UPDATE transactions SET status = ? WHERE id = ?");
+        $stmt->bind_param('si', $new_status, $transaction_id);
+        if ($stmt->execute()) {
+            $stmt->close();
+            $success = "Status transaksi berhasil diupdate!";
 
-                // Fetch transaction details
-                $tranRes = $conn->query("SELECT * FROM transactions WHERE id = '$transaction_id'");
-                if ($tranRes && $tranRes->num_rows > 0) {
-                    $tran = $tranRes->fetch_assoc();
-                    $phone_raw = $tran['phone'] ?? null;
+            // Send WhatsApp notification according to the status selected by admin
+            if (defined('FONNTE_ENABLE_NOTIFICATIONS') && FONNTE_ENABLE_NOTIFICATIONS) {
+                try {
+                    $gateway = new FonnteGateway();
 
-                    if (empty($phone_raw)) {
-                        error_log("Warning: Nomor telepon kosong untuk transaksi #" . $transaction_id);
-                        $recipient = defined('FONNTE_FALLBACK_RECIPIENT') ? FONNTE_FALLBACK_RECIPIENT : null;
-                    } else {
-                        $recipient = $gateway->normalizePhoneNumber($phone_raw);
-                    }
+                    // Fetch transaction details
+                    $tranRes = $conn->prepare("SELECT * FROM transactions WHERE id = ?");
+                    $tranRes->bind_param('i', $transaction_id);
+                    $tranRes->execute();
+                    $res = $tranRes->get_result();
+                    if ($res && $res->num_rows > 0) {
+                        $tran = $res->fetch_assoc();
+                        $phone_raw = $tran['phone'] ?? null;
 
-                    if ($recipient) {
-                        $order_id = $tran['id'];
-                        $nama = $tran['nama_pembeli'] ?? 'Pelanggan';
-                        $total = isset($tran['total_amount']) ? 'Rp ' . number_format($tran['total_amount'], 0, ',', '.') : 'N/A';
-
-                        // Map status to display text
-                        $display_status = ucfirst($new_status);
-
-                        // Build message similar to payment_success.php but reflecting new status
-                        $message = "Hai {$nama},\n\n";
-                        $message .= "Ini adalah pemberitahuan mengenai pesanan Anda di *Adam's Bakery* 🍞\n\n";
-                        $message .= "📦 *Nomor Pesanan:* #{$order_id}\n";
-                        $message .= "\n💰 *Total:* {$total}\n";
-                        $message .= "📊 *Status:* {$display_status}\n\n";
-
-                        if ($new_status === 'confirmed') {
-                            $message .= "Pembayaran Anda telah dikonfirmasi. Invoice dan detail pesanan bisa dilihat di: " . (isset($_SERVER['HTTP_HOST']) ? 'https://' . $_SERVER['HTTP_HOST'] : '') . "/invoice.php?transaction_id={$order_id}\n\n";
-                        } elseif ($new_status === 'cancelled') {
-                            $message .= "Sayangnya pesanan Anda dibatalkan. Jika ini kesalahan, silakan hubungi kami untuk klarifikasi.\n\n";
+                        if (empty($phone_raw)) {
+                            error_log("Warning: Nomor telepon kosong untuk transaksi #" . $transaction_id);
+                            $recipient = defined('FONNTE_FALLBACK_RECIPIENT') ? FONNTE_FALLBACK_RECIPIENT : null;
                         } else {
-                            $message .= "Status pesanan Anda diperbarui menjadi *{$display_status}*.\n\n";
+                            $recipient = $gateway->normalizePhoneNumber($phone_raw);
                         }
 
-                        $message .= "Pertanyaan? Hubungi kami kapan saja.\n\n";
-                        $message .= "Salam hangat,\n*Adam's Bakery* 🥐";
+                        if ($recipient) {
+                            $order_id = $tran['id'];
+                            $nama = $tran['nama_pembeli'] ?? 'Pelanggan';
+                            $total = isset($tran['total_amount']) ? 'Rp ' . number_format($tran['total_amount'], 0, ',', '.') : 'N/A';
 
-                        $wa_result = $gateway->sendMessage($recipient, $message);
-                        if ($wa_result['status']) {
-                            $success .= ' Notifikasi WhatsApp berhasil dikirim ke pelanggan.';
-                            error_log("WhatsApp notifikasi berhasil dikirim ke {$recipient} untuk order #{$order_id}");
+                            // Map status to display text
+                            $display_status = ucfirst($new_status);
+
+                            // Build message
+                            $message = "Hai {$nama},\n\n";
+                            $message .= "Ini adalah pemberitahuan mengenai pesanan Anda di *Adam's Bakery* 🍞\n\n";
+                            $message .= "📦 *Nomor Pesanan:* #{$order_id}\n";
+                            $message .= "\n💰 *Total:* {$total}\n";
+                            $message .= "📊 *Status:* {$display_status}\n\n";
+
+                            if ($new_status === 'confirmed') {
+                                $host = isset($_SERVER['HTTP_HOST']) ? 'https://' . $_SERVER['HTTP_HOST'] : '';
+                                $message .= "Pembayaran Anda telah dikonfirmasi. Invoice dan detail pesanan bisa dilihat di: {$host}/invoice.php?transaction_id={$order_id}\n\n";
+                            } elseif ($new_status === 'cancelled') {
+                                $message .= "Sayangnya pesanan Anda dibatalkan. Jika ini kesalahan, silakan hubungi kami untuk klarifikasi.\n\n";
+                            } else {
+                                $message .= "Status pesanan Anda diperbarui menjadi *{$display_status}*.\n\n";
+                            }
+
+                            $message .= "Pertanyaan? Hubungi kami kapan saja.\n\n";
+                            $message .= "Salam hangat,\n*Adam's Bakery* 🥐";
+
+                            $wa_result = $gateway->sendMessage($recipient, $message);
+                            if (!empty($wa_result['status'])) {
+                                $success .= ' Notifikasi WhatsApp berhasil dikirim ke pelanggan.';
+                                error_log("WhatsApp notifikasi berhasil dikirim ke {$recipient} untuk order #{$order_id}");
+                            } else {
+                                error_log("WhatsApp notifikasi gagal untuk order #{$order_id}: " . json_encode($wa_result));
+                                $success .= ' Namun notifikasi WhatsApp gagal dikirim.';
+                            }
                         } else {
-                            error_log("WhatsApp notifikasi gagal untuk order #{$order_id}: " . json_encode($wa_result));
-                            $success .= ' Namun notifikasi WhatsApp gagal dikirim.';
+                            error_log("Error: Tidak bisa menentukan nomor penerima untuk transaksi #{$transaction_id}");
+                            $success .= ' Namun notifikasi WhatsApp tidak dikirim (nomor tidak valid).';
                         }
-                    } else {
-                        error_log("Error: Tidak bisa menentukan nomor penerima untuk transaksi #{$transaction_id}");
-                        $success .= ' Namun notifikasi WhatsApp tidak dikirim (nomor tidak valid).';
                     }
+                    $tranRes->close();
+                } catch (Exception $e) {
+                    error_log('Exception saat mengirim WhatsApp pada update status: ' . $e->getMessage());
+                    $success .= ' Namun terjadi kesalahan saat mengirim notifikasi WhatsApp.';
                 }
-
-            } catch (Exception $e) {
-                error_log('Exception saat mengirim WhatsApp pada update status: ' . $e->getMessage());
-                $success .= ' Namun terjadi kesalahan saat mengirim notifikasi WhatsApp.';
             }
+
+            // Redirect to avoid form resubmission
+            header('Location: view_transactions.php');
+            exit();
+        } else {
+            $error = "Error: " . $conn->error;
         }
-    } else {
-        $error = "Error: " . $conn->error;
+    } catch (Exception $e) {
+        $error = 'Exception: ' . $e->getMessage();
     }
 }
 
 // Handle toggle admin notification per-order
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['toggle_admin_notif'])) {
-    $transaction_id = $conn->real_escape_string($_POST['transaction_id']);
-    $disabled = isset($_POST['disable']) && $_POST['disable'] == '1' ? 1 : 0;
-    $sql = "UPDATE transactions SET admin_notifications_disabled = $disabled WHERE id = '$transaction_id'";
-    if ($conn->query($sql)) {
-        $success = 'Pengaturan notifikasi admin berhasil diperbarui.';
-    } else {
-        $error = 'Error: ' . $conn->error;
+    try {
+        $transaction_id = intval($_POST['transaction_id'] ?? 0);
+        $disabled = (isset($_POST['disable']) && $_POST['disable'] == '1') ? 1 : 0;
+
+        // Ensure column exists; if not, attempt to add it (safe fallback)
+        $colRes = $conn->query("SHOW COLUMNS FROM transactions LIKE 'admin_notifications_disabled'");
+        if ($colRes && $colRes->num_rows == 0) {
+            // add column
+            $conn->query("ALTER TABLE transactions ADD COLUMN admin_notifications_disabled TINYINT(1) DEFAULT 0");
+        }
+
+        $stmt = $conn->prepare("UPDATE transactions SET admin_notifications_disabled = ? WHERE id = ?");
+        $stmt->bind_param('ii', $disabled, $transaction_id);
+        if ($stmt->execute()) {
+            $stmt->close();
+            $success = 'Pengaturan notifikasi admin berhasil diperbarui.';
+        } else {
+            $error = 'Error: ' . $conn->error;
+        }
+
+        // Redirect back to avoid POST issues
+        header('Location: view_transactions.php');
+        exit();
+    } catch (Exception $e) {
+        $error = 'Exception: ' . $e->getMessage();
     }
 }
 
 // Handle resend admin notification for a transaction
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['resend_admin_notif'])) {
-    $transaction_id = intval($_POST['transaction_id']);
+    $transaction_id = intval($_POST['transaction_id'] ?? 0);
     try {
         require_once __DIR__ . '/../backend/admin_notifier.php';
         $notifier = new AdminNotifier($conn);
         $res = $notifier->notifyNewOrder($transaction_id, true);
-        if ($res['status']) {
+        if (!empty($res['status'])) {
             $success = 'Notifikasi ulang berhasil dikirim.';
         } else {
             $error = 'Gagal mengirim notifikasi ulang: ' . ($res['reason'] ?? $res['error'] ?? 'Unknown');
@@ -115,6 +147,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['resend_admin_notif']))
     } catch (Exception $e) {
         $error = 'Exception: ' . $e->getMessage();
     }
+
+    // Redirect to avoid re-submission
+    header('Location: view_transactions.php');
+    exit();
 }
 
 // Get all transactions
