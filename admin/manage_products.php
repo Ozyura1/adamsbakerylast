@@ -13,8 +13,31 @@ function flashAndRedirect($type, $message) {
 
 // Helper function for image upload validation
 function validateAndUploadImage($file, $targetDir = "../uploads/") {
-    if (!isset($file) || $file['error'] != 0) {
+    if (!isset($file)) {
         return null;
+    }
+
+    // If an upload error occurred, handle it (but allow 'no file' silently)
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+        $errCode = $file['error'] ?? null;
+        if ($errCode === UPLOAD_ERR_NO_FILE || $errCode === null) {
+            // No file selected — treat as no upload
+            return null;
+        }
+
+        // Map upload error code to message
+        $errMessages = [
+            UPLOAD_ERR_INI_SIZE => 'File melebihi upload_max_filesize di server',
+            UPLOAD_ERR_FORM_SIZE => 'File melebihi MAX_FILE_SIZE di form',
+            UPLOAD_ERR_PARTIAL => 'Upload terhenti sebagian',
+            UPLOAD_ERR_NO_FILE => 'Tidak ada file yang diupload',
+            UPLOAD_ERR_NO_TMP_DIR => 'Folder sementara hilang di server',
+            UPLOAD_ERR_CANT_WRITE => 'Gagal menulis file ke disk',
+            UPLOAD_ERR_EXTENSION => 'Upload dihentikan oleh ekstensi PHP'
+        ];
+        $msg = $errMessages[$errCode] ?? 'Kesalahan upload tidak diketahui';
+        error_log("manage_products.php upload error ({$errCode}): {$msg}");
+        flashAndRedirect('error', 'Gagal upload file: ' . $msg . " (code {$errCode})");
     }
     
     if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
