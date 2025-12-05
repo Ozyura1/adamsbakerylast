@@ -212,6 +212,16 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY nama ASC");
 </header>
 
 <main>
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-error" style="background:#f8d7da;color:#721c24;padding:10px;border-radius:6px;margin-bottom:1rem;">
+            <?php echo htmlspecialchars($_SESSION['error'], ENT_QUOTES, 'UTF-8'); unset($_SESSION['error']); ?>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['info'])): ?>
+        <div class="alert alert-info" style="background:#d4edda;color:#155724;padding:10px;border-radius:6px;margin-bottom:1rem;">
+            <?php echo htmlspecialchars($_SESSION['info'], ENT_QUOTES, 'UTF-8'); unset($_SESSION['info']); ?>
+        </div>
+    <?php endif; ?>
     <h2><?php echo $editData ? "Edit Produk" : "Tambah Produk Baru"; ?></h2>
     <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="action" value="<?php echo $editData ? "update" : "add"; ?>">
@@ -242,7 +252,7 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY nama ASC");
         <label>Foto Produk:</label>
         <input type="file" name="foto" accept="image/*">
         <?php if ($editData && $editData['image']): ?>
-            <br><img src="../uploads/<?php echo htmlspecialchars($editData['image'], ENT_QUOTES, 'UTF-8'); ?>" width="100">
+            <br><img src="/uploads/<?php echo htmlspecialchars($editData['image'], ENT_QUOTES, 'UTF-8'); ?>" width="100">
         <?php endif; ?>
 
         <button type="submit"><?php echo $editData ? "Update Produk" : "Tambah Produk"; ?></button>
@@ -261,7 +271,7 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY nama ASC");
             <td>Rp <?php echo number_format($product['harga'],0,',','.'); ?></td>
             <td>
                 <?php if ($product['image']): ?>
-                    <img src="../uploads/<?php echo htmlspecialchars($product['image'], ENT_QUOTES, 'UTF-8'); ?>" width="80">
+                    <img src="/uploads/<?php echo htmlspecialchars($product['image'], ENT_QUOTES, 'UTF-8'); ?>" width="80">
                 <?php endif; ?>
             </td>
             <td>
