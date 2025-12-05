@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "
                 <h2 style='color:$styleColor;'>✅ Verifikasi Berhasil!</h2>
                 <p>Akun Anda telah aktif. Anda akan diarahkan ke halaman login dalam <b>3 detik</b>.</p>
-                <a href='https://adambakery.thebamfams.web.id/customer_auth.php?verified=1' style='
+                <a href='https://adambakery.thebamfams.web.id/customer_auth.php' style='
                     display:inline-block;
                     margin-top:10px;
                     padding:10px 20px;
