@@ -18,7 +18,7 @@ $result = $conn->query($query);
 if ($result->num_rows == 0) {
     echo "<script>
         alert('Tidak ada transaksi hari ini yang bisa diekspor.');
-        window.location.href = 'view_transaction.php';
+        window.location.href = 'view_transactions.php';
     </script>";
     exit();
 }
