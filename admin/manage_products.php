@@ -11,67 +11,81 @@ function flashAndRedirect($type, $message) {
     exit();
 }
 
-// Helper function for image upload validation (gunakan absolute uploads path dan batas dari php.ini)
-function phpSizeToBytes($size) {
-    $unit = strtolower(substr($size, -1));
-    $bytes = (int)$size;
-    if ($unit === 'g') $bytes *= 1024*1024*1024;
-    if ($unit === 'm') $bytes *= 1024*1024;
-    if ($unit === 'k') $bytes *= 1024;
-    return $bytes;
-}
+// Helper function for image upload validation
+function validateAndUploadImage($file, $targetDir = "../uploads/") {
+    if (!isset($file)) {
+        return null;
+    }
 
-function validateAndUploadImage($file, $targetDir = null) {
-    // default ke absolute uploads folder
-    if ($targetDir === null) {
-        $uploadsReal = realpath(__DIR__ . '/../uploads');
-        if ($uploadsReal === false) {
-            throw new Exception('Folder uploads tidak ditemukan. Buat folder /var/www/adamsbakery/uploads dan set permission.');
+    // If an upload error occurred, handle it (but allow 'no file' silently)
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+        $errCode = $file['error'] ?? null;
+        if ($errCode === UPLOAD_ERR_NO_FILE || $errCode === null) {
+            // No file selected — treat as no upload
+            return null;
         }
-        $targetDir = $uploadsReal . DIRECTORY_SEPARATOR;
-    }
 
-    if (!isset($file) || $file['error'] === UPLOAD_ERR_NO_FILE) {
-        return null; // tidak ada file diupload
+        // Map upload error code to message
+        $errMessages = [
+            UPLOAD_ERR_INI_SIZE => 'File melebihi upload_max_filesize di server',
+            UPLOAD_ERR_FORM_SIZE => 'File melebihi MAX_FILE_SIZE di form',
+            UPLOAD_ERR_PARTIAL => 'Upload terhenti sebagian',
+            UPLOAD_ERR_NO_FILE => 'Tidak ada file yang diupload',
+            UPLOAD_ERR_NO_TMP_DIR => 'Folder sementara hilang di server',
+            UPLOAD_ERR_CANT_WRITE => 'Gagal menulis file ke disk',
+            UPLOAD_ERR_EXTENSION => 'Upload dihentikan oleh ekstensi PHP'
+        ];
+        $msg = $errMessages[$errCode] ?? 'Kesalahan upload tidak diketahui';
+        error_log("manage_products.php upload error ({$errCode}): {$msg}");
+        flashAndRedirect('error', 'Gagal upload file: ' . $msg . " (code {$errCode})");
     }
-
-    if ($file['error'] !== UPLOAD_ERR_OK) {
-        throw new Exception('Upload error code: ' . $file['error']);
-    }
-
-    // gunakan batas dari php.ini (fallback 5MB), cap maksimal 10MB
-    $iniMax = ini_get('upload_max_filesize') ? phpSizeToBytes(ini_get('upload_max_filesize')) : 5*1024*1024;
-    $maxFileSize = min($iniMax, 10*1024*1024);
+    
+    if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
+    
+    // Validate file size (max 5MB)
+    $maxFileSize = 5 * 1024 * 1024; // 5MB
     if ($file['size'] > $maxFileSize) {
-        throw new Exception('File terlalu besar. Maksimal: ' . ($maxFileSize/1024/1024) . ' MB');
+        flashAndRedirect('error', 'File terlalu besar. Maksimal ukuran: 5MB');
     }
-
-    // ext & MIME check
-    $allowedExt = ['jpg','jpeg','png'];
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, $allowedExt, true)) {
-        throw new Exception('Tipe file tidak didukung. Hanya jpg/jpeg/png.');
+    
+    // Validate file extension
+    $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowedExts = ['jpg', 'jpeg', 'png'];
+    if (!in_array($fileExt, $allowedExts)) {
+        flashAndRedirect('error', 'Tipe file tidak diizinkan. Hanya JPG, JPEG, PNG yang diperbolehkan.');
     }
+    
+    // Validate MIME type
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime = finfo_file($finfo, $file['tmp_name']);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
-    if (!in_array($mime, ['image/jpeg','image/png'], true)) {
-        throw new Exception('File bukan gambar valid (MIME mismatch).');
+    
+    $allowedMimes = ['image/jpeg', 'image/png'];
+    if (!in_array($mimeType, $allowedMimes)) {
+        flashAndRedirect('error', 'MIME type tidak valid. Hanya JPEG dan PNG yang diperbolehkan.');
+    }
+    
+    // Generate secure filename
+    $fileName = time() . "_" . uniqid() . "." . $fileExt;
+    $filePath = $targetDir . $fileName;
+    
+    // Move uploaded file
+    if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+        $debug = [
+            'tmp_name' => $file['tmp_name'] ?? null,
+            'tmp_exists' => isset($file['tmp_name']) ? (file_exists($file['tmp_name']) ? 'yes' : 'no') : 'no',
+            'target_dir' => $targetDir,
+            'target_realpath' => realpath($targetDir) ?: 'n/a',
+            'target_writable' => is_writable($targetDir) ? 'yes' : 'no',
+            'upload_tmp_dir' => ini_get('upload_tmp_dir') ?: 'default',
+            'file_error' => $file['error'] ?? 'none'
+        ];
+        error_log('manage_products.php move_uploaded_file failed: ' . json_encode($debug));
+        flashAndRedirect('error', 'Gagal upload file');
     }
 
-    if (!is_writable($targetDir)) {
-        throw new Exception('Folder upload tidak dapat ditulis oleh server (permission).');
-    }
-
-    $newName = uniqid('p_', true) . '.' . $ext;
-    $targetPath = $targetDir . $newName;
-
-    if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
-        error_log('manage_products.php move_uploaded_file failed: tmp=' . ($file['tmp_name'] ?? '') . ' target=' . $targetPath . ' exists_tmp=' . (file_exists($file['tmp_name']) ? '1' : '0'));
-        throw new Exception('Gagal memindahkan file upload. Cek permission / tmp dir.');
-    }
-
-    return $newName;
+    error_log('manage_products.php uploaded file saved: ' . $filePath);
+    return $fileName;
 }
 
 session_start();
