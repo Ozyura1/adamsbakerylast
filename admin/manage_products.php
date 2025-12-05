@@ -71,9 +71,20 @@ function validateAndUploadImage($file, $targetDir = "../uploads/") {
     
     // Move uploaded file
     if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+        $debug = [
+            'tmp_name' => $file['tmp_name'] ?? null,
+            'tmp_exists' => isset($file['tmp_name']) ? (file_exists($file['tmp_name']) ? 'yes' : 'no') : 'no',
+            'target_dir' => $targetDir,
+            'target_realpath' => realpath($targetDir) ?: 'n/a',
+            'target_writable' => is_writable($targetDir) ? 'yes' : 'no',
+            'upload_tmp_dir' => ini_get('upload_tmp_dir') ?: 'default',
+            'file_error' => $file['error'] ?? 'none'
+        ];
+        error_log('manage_products.php move_uploaded_file failed: ' . json_encode($debug));
         flashAndRedirect('error', 'Gagal upload file');
     }
-    
+
+    error_log('manage_products.php uploaded file saved: ' . $filePath);
     return $fileName;
 }
 
