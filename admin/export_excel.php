@@ -1,65 +1,59 @@
 <?php
+session_start();
 include '../backend/db.php';
+
+// Check admin session
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
 // Set zona waktu
 date_default_timezone_set('Asia/Jakarta');
 $tanggal_hari_ini = date('Y-m-d');
 
-// Ambil transaksi yang dikonfirmasi dan dibuat hari ini
-$query = "
+// Ambil transaksi yang dikonfirmasi dan dibuat hari ini (prepared statement)
+$stmt = $conn->prepare("
     SELECT * FROM transactions
-    WHERE DATE(created_at) = '$tanggal_hari_ini'
+    WHERE DATE(created_at) = ?
     AND status = 'confirmed'
     ORDER BY created_at DESC
-";
-$result = $conn->query($query);
+");
+$stmt->bind_param('s', $tanggal_hari_ini);
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Jika tidak ada transaksi hari ini
 if ($result->num_rows == 0) {
-    echo "<script>
-        alert('Tidak ada transaksi hari ini yang bisa diekspor.');
-        window.location.href = 'view_transactions.php';
-    </script>";
+    $_SESSION['info'] = 'Tidak ada transaksi hari ini yang bisa diekspor.';
+    header("Location: view_transactions.php");
     exit();
 }
 
-// Header untuk file Excel
-header("Content-Type: application/vnd.ms-excel");
-header("Content-Disposition: attachment; filename=laporan_penjualan_" . date('Ymd_His') . ".xls");
+// Header untuk file CSV
+header("Content-Type: text/csv; charset=UTF-8");
+header("Content-Disposition: attachment; filename=laporan_penjualan_" . date('Ymd_His') . ".csv");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// Cetak data transaksi
-echo "<table border='1'>";
-echo "<tr>
-<th>ID</th>
-<th>Nama Pembeli</th>
-<th>Email</th>
-<th>Total</th>
-<th>Bank</th>
-<th>Status</th>
-<th>Tanggal</th>
-</tr>";
+// Output BOM untuk UTF-8
+echo "\xEF\xBB\xBF";
 
+// CSV Header
+echo "ID,Nama Pembeli,Email,Total,Bank,Status,Tanggal\n";
+
+// Data transaksi
 while ($row = $result->fetch_assoc()) {
-    echo "<tr>";
-    echo "<td>{$row['id']}</td>";
-    echo "<td>{$row['nama_pembeli']}</td>";
-    echo "<td>{$row['email']}</td>";
-    echo "<td>Rp " . number_format($row['total_amount'], 0, ',', '.') . "</td>";
-    echo "<td>{$row['bank_name']}</td>";
-    echo "<td>{$row['status']}</td>";
-    echo "<td>" . date('d/m/Y H:i', strtotime($row['created_at'])) . "</td>";
-    echo "</tr>";
+    $nama = str_replace('"', '""', $row['nama_pembeli']);
+    $email = $row['email'];
+    $total = $row['total_amount'];
+    $bank = $row['bank_name'];
+    $status = $row['status'];
+    $tanggal = date('d/m/Y H:i', strtotime($row['created_at']));
+    
+    echo "\"{$row['id']}\",\"$nama\",\"$email\",\"Rp " . number_format($total, 0, ',', '.') . "\",\"$bank\",\"$status\",\"$tanggal\"\n";
 }
-echo "</table>";
 
-// Hapus transaksi hari ini setelah ekspor
-$conn->query("
-    DELETE FROM transactions 
-    WHERE DATE(created_at) = '$tanggal_hari_ini'
-    AND status = 'confirmed'
-");
-
+$stmt->close();
 $conn->close();
 ?>
