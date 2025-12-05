@@ -10,29 +10,45 @@ if (!isset($_SESSION['admin_id'])) {
 
 // Set zona waktu
 date_default_timezone_set('Asia/Jakarta');
+
+// Tentukan tipe export (default: today)
+$export_type = $_POST['export_type'] ?? 'today';
 $tanggal_hari_ini = date('Y-m-d');
 
-// Ambil transaksi yang dikonfirmasi dan dibuat hari ini (prepared statement)
-$stmt = $conn->prepare("
-    SELECT * FROM transactions
-    WHERE DATE(created_at) = ?
-    AND status = 'confirmed'
-    ORDER BY created_at DESC
-");
-$stmt->bind_param('s', $tanggal_hari_ini);
+// Build query berdasarkan tipe export
+if ($export_type === 'today') {
+    // Ekspor transaksi hari ini yang confirmed
+    $stmt = $conn->prepare("
+        SELECT * FROM transactions
+        WHERE DATE(created_at) = ?
+        AND status = 'confirmed'
+        ORDER BY created_at DESC
+    ");
+    $stmt->bind_param('s', $tanggal_hari_ini);
+    $filename_prefix = "laporan_hari_ini_";
+} else {
+    // Ekspor semua transaksi yang confirmed
+    $stmt = $conn->prepare("
+        SELECT * FROM transactions
+        WHERE status = 'confirmed'
+        ORDER BY created_at DESC
+    ");
+    $filename_prefix = "laporan_semua_";
+}
+
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Jika tidak ada transaksi hari ini
+// Jika tidak ada transaksi
 if ($result->num_rows == 0) {
-    $_SESSION['info'] = 'Tidak ada transaksi hari ini yang bisa diekspor.';
+    $_SESSION['info'] = 'Tidak ada transaksi yang bisa diekspor.';
     header("Location: view_transactions.php");
     exit();
 }
 
 // Header untuk file CSV
 header("Content-Type: text/csv; charset=UTF-8");
-header("Content-Disposition: attachment; filename=laporan_penjualan_" . date('Ymd_His') . ".csv");
+header("Content-Disposition: attachment; filename=" . $filename_prefix . date('Ymd_His') . ".csv");
 header("Pragma: no-cache");
 header("Expires: 0");
 

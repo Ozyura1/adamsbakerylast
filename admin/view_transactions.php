@@ -286,9 +286,17 @@ $transactions = $conn->query("SELECT * FROM transactions ORDER BY created_at DES
         </tbody>
     </table>
 
-    <form action="export_excel.php" method="post" style="text-align:center; margin-top:20px;">
-        <button type="submit" class="btn-export">Ekspor Laporan Penjualan</button>
-    </form>
+    <div style="text-align:center; margin-top:20px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <form action="export_excel.php" method="post" style="display:inline;">
+            <input type="hidden" name="export_type" value="today">
+            <button type="submit" class="btn-export" style="background:#28a745; padding:10px 20px; border-radius:6px; color:white; border:none; cursor:pointer;">📥 Ekspor Hari Ini</button>
+        </form>
+        
+        <form action="export_excel.php" method="post" style="display:inline;">
+            <input type="hidden" name="export_type" value="all">
+            <button type="submit" class="btn-export" style="background:#007bff; padding:10px 20px; border-radius:6px; color:white; border:none; cursor:pointer;">📥 Ekspor Semua</button>
+        </form>
+    </div>
 </main>
 
 <?php include '../includes/footer.php'; ?>
