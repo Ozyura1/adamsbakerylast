@@ -56,7 +56,7 @@ $notifications = $conn->query($sql);
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
-<?php include 'includes/header.php'; ?>
+<?php include __DIR__ . '/../includes/header.php'; ?>
 <main>
     <h2>Riwayat Notifikasi WhatsApp</h2>
 
@@ -102,6 +102,6 @@ $notifications = $conn->query($sql);
         </tbody>
     </table>
 </main>
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>
