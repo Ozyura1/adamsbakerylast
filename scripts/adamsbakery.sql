@@ -291,19 +291,6 @@ INSERT INTO `transaction_items` (`id`, `transaction_id`, `product_id`, `package_
 	(60, 54, 18, NULL, 'product', 1, 6000.00),
 	(61, 54, NULL, 2, 'package', 1, 200000.00);
 
--- ========================================
--- Migration: Add admin notification tracking
--- ========================================
--- Add columns to transactions table for admin notification tracking
-ALTER TABLE `transactions` 
-ADD COLUMN `admin_notified_at` TIMESTAMP NULL DEFAULT NULL COMMENT 'Waktu notifikasi admin dikirim',
-ADD COLUMN `admin_notified_status` ENUM('pending', 'sent', 'failed') DEFAULT 'pending' COMMENT 'Status pengiriman notifikasi ke admin (pending/sent/failed)';
-
--- Add columns to kontak table for admin notification tracking
-ALTER TABLE `kontak` 
-ADD COLUMN `admin_notified_at` TIMESTAMP NULL DEFAULT NULL COMMENT 'Waktu notifikasi admin dikirim',
-ADD COLUMN `admin_notified_status` ENUM('pending', 'sent', 'failed') DEFAULT 'pending' COMMENT 'Status pengiriman notifikasi ke admin (pending/sent/failed)';
-
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
