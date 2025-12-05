@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Admin Login - Adam Bakery</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="icon" type="image/png" href="../assets/logoadambakery.png">
 </head>
 <body>

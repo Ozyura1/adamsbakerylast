@@ -7,7 +7,7 @@ require 'mailer.php';
 <head>
   <meta charset="UTF-8">
   <title>Registrasi</title>
-  <link rel="stylesheet" href="../style.css"> <!-- pastikan ini mengarah ke file css kamu -->
+  <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
 

@@ -30,7 +30,7 @@ if (isset($_GET['email']) && isset($_GET['transaction_id'])) {
 <head>
     <meta charset="UTF-8">
     <title>Cek Status Ulasan - Adam Bakery</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="icon" type="image/png" href="../assets/logoadambakery.png">
 </head>
 <body>

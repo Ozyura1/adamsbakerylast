@@ -53,7 +53,7 @@ $notifications = $conn->query($sql);
 <head>
     <meta charset="UTF-8">
     <title>Riwayat Notifikasi WA - Admin</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>
