@@ -52,7 +52,7 @@ function getStatusStyle($status) {
     <meta charset="UTF-8">
     <title>Dashboard Admin - Adam Bakery</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="icon" type="image/png" href="../assets/logoadambakery.png">
+    <link rel="icon" type="image/png" href="/assets/images/logoadambakery.png">
     <style>
         main { padding: 20px 40px; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }

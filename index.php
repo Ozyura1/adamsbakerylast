@@ -125,7 +125,7 @@ $recent_reviews = $conn->query("
                                     alt="<?php echo htmlspecialchars($package['nama']); ?>" 
                                     style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem;">
                             <?php else: ?>
-                                <img src="assets/no-image.png" 
+                                <img src="/assets/images/no-image.png" 
                                     alt="No Image" 
                                     style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem;">
                             <?php endif; ?>
@@ -251,7 +251,7 @@ $recent_reviews = $conn->query("
             <!-- Call to Action Section -->
             <section style="text-align: center; padding: 3rem 0; background: linear-gradient(135deg, #8b5a3c 0%, #6b4423 100%); color: #f4e4c1; border-radius: 15px;">
                 
-                <img src="assets/footer-banner.jpg" alt="Adam's Bakery" style="max-width: 80%; border-radius: 10px; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                <img src="/assets/images/footer-banner.jpg" alt="Adam's Bakery" style="max-width: 80%; border-radius: 10px; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                 
                 <h2 style="color: #f4e4c1;">Siap Memesan?</h2>
                 <p style="color: #f4e4c1; margin-bottom: 2rem;">

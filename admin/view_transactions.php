@@ -127,7 +127,7 @@ $transactions = $conn->query("SELECT * FROM transactions ORDER BY created_at DES
     <meta charset="UTF-8">
     <title>Kelola Transaksi - Admin Adam Bakery</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="icon" type="image/png" href="../assets/logoadambakery.png">
+    <link rel="icon" type="image/png" href="/assets/images/logoadambakery.png">
     <style>
         table {
             width: 100%;

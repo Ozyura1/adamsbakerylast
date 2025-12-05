@@ -127,7 +127,7 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY nama ASC");
     <meta charset="UTF-8">
     <title>Kelola Produk - Admin</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="icon" type="image/png" href="../assets/logoadambakery.png">
+    <link rel="icon" type="image/png" href="/assets/images/logoadambakery.png">
 </head>
 <body>
 <header class="admin-header">

@@ -31,7 +31,7 @@ if (isset($_GET['email']) && isset($_GET['transaction_id'])) {
     <meta charset="UTF-8">
     <title>Cek Status Ulasan - Adam Bakery</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="icon" type="image/png" href="../assets/logoadambakery.png">
+    <link rel="icon" type="image/png" href="/assets/images/logoadambakery.png">
 </head>
 <body>
 <?php include 'includes/header.php'; ?>

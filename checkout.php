@@ -219,7 +219,7 @@ $user = getCurrentUser();
                             <div class="bank-info">
                                 <p><strong>Rekening Tujuan:</strong></p>
                                 <p>Mandiri: 1390088899913 a.n. Adam Bakery</p>
-                                <p><a href="assets/qris.jpg" target="_blank">Lihat QRIS</a></p>
+                                <p><a href="/assets/images/qris.jpg" target="_blank">Lihat QRIS</a></p>
                             </div>
                             
                             <div class="form-group">

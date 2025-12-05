@@ -47,7 +47,7 @@ $recent_transactions = $conn->query("SELECT * FROM transactions ORDER BY created
     <meta charset="UTF-8">
     <title>Dashboard Admin - Adam Bakery</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="icon" type="image/png" href="../assets/logoadambakery.png">
+    <link rel="icon" type="image/png" href="/assets/images/logoadambakery.png">
 </head>
 <body>
 <header class="admin-header">

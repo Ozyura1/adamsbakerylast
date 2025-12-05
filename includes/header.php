@@ -22,7 +22,7 @@ $cartSummary = getCartSummary();
     <header class="site-header">
         <div class="header-container">
             <div class="logo-section">
-                <img src="assets/logoadambakery.png" alt="<?php echo APP_NAME; ?> Logo" class="logo">
+                <img src="/assets/images/logoadambakery.png" alt="<?php echo APP_NAME; ?> Logo" class="logo">
                 <div class="brand-info">
                     <h1 class="brand-name"><?php echo APP_NAME; ?></h1>
                     <p class="brand-tagline">Kelezatan Tradisional dengan Sentuhan Modern</p>
