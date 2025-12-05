@@ -20,11 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (strtotime($user['otp_expires_at']) < time()) {
             $styleColor = '#FF9800';
             $message = "<h2 style='color:$styleColor;'>⚠️ OTP Kadaluarsa</h2>
-                        <p>Silakan minta ulang kode verifikasi.</p>";
+                        <p>Silahkan minta ulang kode verifikasi.</p>";
         } elseif ($user['otp_attempts'] >= 3) {
             $styleColor = '#FF9800';
             $message = "<h2 style='color:$styleColor;'>⚠️ Terlalu Banyak Percobaan</h2>
-                        <p>Anda telah melebihi batas percobaan OTP. Silakan kirim ulang OTP.</p>";
+                        <p>Anda telah melebihi batas percobaan OTP. Silahkan kirim ulang OTP.</p>";
         } elseif ($user['otp_code'] === $otp_code) {
             // Verifikasi berhasil
             $update = "UPDATE customer_users 

@@ -28,11 +28,11 @@
             <div class="footer-section">
                 <h4>Menu Cepat</h4>
                 <ul>
-                    <li><a href="index.php">Beranda</a></li>
-                    <li><a href="products.php">Produk</a></li>
-                    <li><a href="packages.php">Paket Spesial</a></li>
-                    <li><a href="contact.php">Kontak</a></li>
-                    <li><a href="check_review_status.php">Beri Ulasan</a></li>
+                    <li><a href="/index.php">Beranda</a></li>
+                    <li><a href="/products.php">Produk</a></li>
+                    <li><a href="/packages.php">Paket Spesial</a></li>
+                    <li><a href="/contact.php">Kontak</a></li>
+                    <li><a href="/check_review_status.php">Beri Ulasan</a></li>
                 </ul>
             </div>
         </div>
