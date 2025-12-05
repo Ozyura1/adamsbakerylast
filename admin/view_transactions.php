@@ -262,7 +262,7 @@ $transactions = $conn->query("SELECT * FROM transactions ORDER BY created_at DES
                     <?php endif; ?>
                 </td>
 
-                <td><?php echo ucfirst($transaction['status'] ?? 'pending');?></td>
+                <td><?php echo htmlspecialchars(ucfirst($transaction['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8');?></td>
                 <td><?php echo date('d/m/Y H:i', strtotime($transaction['created_at'])); ?></td>
 
                 <td>

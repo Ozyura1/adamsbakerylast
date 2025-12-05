@@ -8,7 +8,11 @@ if (!$transaction_id) {
     $error = "Tidak ada transaksi yang dipilih. Silakan pilih transaksi untuk memberi ulasan.";
 } else {
     // Verify transaction exists and is confirmed
-    $transaction_result = $conn->query("SELECT * FROM transactions WHERE id = $transaction_id AND status = 'confirmed'");
+    $transaction_stmt = $conn->prepare("SELECT * FROM transactions WHERE id = ? AND status = 'confirmed'");
+    $transaction_stmt->bind_param('i', $transaction_id);
+    $transaction_stmt->execute();
+    $transaction_result = $transaction_stmt->get_result();
+    $transaction_stmt->close();
     
     if ($transaction_result->num_rows == 0) {
         $error = "Transaksi tidak ditemukan atau belum dikonfirmasi.";
@@ -41,26 +45,26 @@ if (!$transaction_id) {
 
 <main>
     <?php if (isset($error)): ?>
-        <div class="alert alert-error"><?php echo $error; ?></div>
+        <div class="alert alert-error"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
         <a href="index.php" class="btn">Kembali ke Beranda</a>
     <?php else: ?>
         <h2>Berikan Ulasan Anda</h2>
-        <p>Transaksi ID: <strong><?php echo $transaction['id']; ?></strong></p>
-        <p>Nama: <strong><?php echo $transaction['nama_pembeli']; ?></strong></p>
+        <p>Transaksi ID: <strong><?php echo htmlspecialchars($transaction['id'], ENT_QUOTES, 'UTF-8'); ?></strong></p>
+        <p>Nama: <strong><?php echo htmlspecialchars($transaction['nama_pembeli'], ENT_QUOTES, 'UTF-8'); ?></strong></p>
         
         <?php while ($item = $items->fetch_assoc()): ?>
             <div class="product-card" style="margin-bottom: 2rem;">
-                <h4><?php echo $item['item_name']; ?> (<?php echo ucfirst($item['item_type']); ?>)</h4>
-                <p>Jumlah: <?php echo $item['quantity']; ?>x</p>
+                <h4><?php echo htmlspecialchars($item['item_name'], ENT_QUOTES, 'UTF-8'); ?> (<?php echo htmlspecialchars(ucfirst($item['item_type']), ENT_QUOTES, 'UTF-8'); ?>)</h4>
+                <p>Jumlah: <?php echo (int)$item['quantity']; ?>x</p>
                 
                 <?php if ($item['reviewed'] > 0): ?>
                     <div class="alert alert-info">Anda sudah memberikan ulasan untuk item ini.</div>
                 <?php else: ?>
                     <form method="post" action="backend/process_review.php">
-                        <input type="hidden" name="transaction_id" value="<?php echo $transaction_id; ?>">
-                        <input type="hidden" name="item_type" value="<?php echo $item['item_type']; ?>">
-                        <input type="hidden" name="item_id" value="<?php echo $item['item_id']; ?>">
-                        <input type="hidden" name="nama_reviewer" value="<?php echo $transaction['nama_pembeli']; ?>">
+                        <input type="hidden" name="transaction_id" value="<?php echo (int)$transaction_id; ?>">
+                        <input type="hidden" name="item_type" value="<?php echo htmlspecialchars($item['item_type'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="item_id" value="<?php echo (int)$item['item_id']; ?>">
+                        <input type="hidden" name="nama_reviewer" value="<?php echo htmlspecialchars($transaction['nama_pembeli'], ENT_QUOTES, 'UTF-8'); ?>">
                         
                         <div class="rating-row">
                         <label>Rating:</label>

@@ -21,11 +21,14 @@ $sql = "SELECT t.*,
         LEFT JOIN transaction_items ti ON t.id = ti.transaction_id
         LEFT JOIN products p ON ti.product_id = p.id
         LEFT JOIN packages pkg ON ti.package_id = pkg.id
-        WHERE t.customer_id = $customer_id
+        WHERE t.customer_id = ?
         GROUP BY t.id
         ORDER BY t.created_at DESC";
 
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $customer_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 include 'includes/header.php';
 ?>
@@ -45,17 +48,17 @@ include 'includes/header.php';
                 <div style="border: 1px solid #ddd; padding: 1rem; border-radius: 8px; background: #f9f9f9;">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                         <div>
-                            <h3>Pesanan #<?php echo $order['id']; ?></h3>
+                            <h3>Pesanan #<?php echo (int)$order['id']; ?></h3>
                             <p style="color: #666; margin: 0;"><?php echo date('d M Y H:i', strtotime($order['created_at'])); ?></p>
                         </div>
                         <span class="badge <?php echo $order['status'] == 'confirmed' ? 'badge-success' : ($order['status'] == 'cancelled' ? 'badge-error' : 'badge-warning'); ?>">
-                            <?php echo ucfirst($order['status']); ?>
+                            <?php echo htmlspecialchars(ucfirst($order['status']), ENT_QUOTES, 'UTF-8'); ?>
                         </span>
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
                         <strong>Items:</strong><br>
-                        <?php echo $order['items']; ?>
+                        <?php echo htmlspecialchars($order['items'], ENT_QUOTES, 'UTF-8'); ?>
                     </div>
                     
                     <div style="display: flex; justify-content: space-between;">
@@ -63,7 +66,7 @@ include 'includes/header.php';
                             <strong>Total: Rp <?php echo number_format($order['total_amount'], 0, ',', '.'); ?></strong>
                         </div>
                         <div>
-                            <strong>Bank: <?php echo $order['bank_name']; ?></strong>
+                            <strong>Bank: <?php echo htmlspecialchars($order['bank_name'], ENT_QUOTES, 'UTF-8'); ?></strong>
                         </div>
                     </div>
                 </div>

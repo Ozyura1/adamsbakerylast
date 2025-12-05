@@ -5,10 +5,13 @@ include 'backend/db.php';
 $transaction_id = isset($_GET['transaction_id']) ? intval($_GET['transaction_id']) : 0;
 
 if ($transaction_id > 0) {
-    $result = $conn->query("SELECT * FROM transactions WHERE id = $transaction_id");
+    $stmt = $conn->prepare("SELECT * FROM transactions WHERE id = ?");
+    $stmt->bind_param('i', $transaction_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $transaction = $result->fetch_assoc();
 
-    $items_query = "
+    $items_stmt = $conn->prepare("
         SELECT ti.*, 
                CASE 
                    WHEN ti.item_type = 'product' THEN p.nama
@@ -17,9 +20,12 @@ if ($transaction_id > 0) {
         FROM transaction_items ti
         LEFT JOIN products p ON ti.product_id = p.id
         LEFT JOIN packages pkg ON ti.package_id = pkg.id
-        WHERE ti.transaction_id = $transaction_id
-    ";
-    $items = $conn->query($items_query);
+        WHERE ti.transaction_id = ?
+    ");
+    $items_stmt->bind_param('i', $transaction_id);
+    $items_stmt->execute();
+    $items = $items_stmt->get_result();
+    $stmt->close();
 } else {
     die("Transaksi tidak ditemukan");
 }
@@ -68,10 +74,10 @@ $pdf->SetTextColor(60, 40, 20);
 
 // --- Detail Transaksi ---
 $pdf->Cell(0, 8, 'No. Invoice: INV-' . str_pad($transaction['id'], 5, '0', STR_PAD_LEFT), 0, 1);
-$pdf->Cell(0, 8, 'Nama Pembeli: ' . $transaction['nama_pembeli'], 0, 1);
-$pdf->Cell(0, 8, 'Email: ' . $transaction['email'], 0, 1);
+$pdf->Cell(0, 8, 'Nama Pembeli: ' . htmlspecialchars($transaction['nama_pembeli'], ENT_QUOTES, 'UTF-8'), 0, 1);
+$pdf->Cell(0, 8, 'Email: ' . htmlspecialchars($transaction['email'], ENT_QUOTES, 'UTF-8'), 0, 1);
 $pdf->Cell(0, 8, 'Tanggal: ' . date('d-m-Y', strtotime($transaction['created_at'])), 0, 1);
-$pdf->Cell(0, 8, 'Status: ' . ucfirst($transaction['status']), 0, 1);
+$pdf->Cell(0, 8, 'Status: ' . htmlspecialchars(ucfirst($transaction['status']), ENT_QUOTES, 'UTF-8'), 0, 1);
 $pdf->Ln(6);
 
 // --- Tabel ---
@@ -90,8 +96,8 @@ while ($item = $items->fetch_assoc()) {
     $subtotal = $item['price'] * $item['quantity'];
     $total += $subtotal;
 
-    $pdf->Cell(80, 10, $item['item_name'], 1);
-    $pdf->Cell(30, 10, $item['quantity'], 1, 0, 'C');
+    $pdf->Cell(80, 10, htmlspecialchars($item['item_name'], ENT_QUOTES, 'UTF-8'), 1);
+    $pdf->Cell(30, 10, (int)$item['quantity'], 1, 0, 'C');
     $pdf->Cell(40, 10, 'Rp ' . number_format($item['price'], 0, ',', '.'), 1);
     $pdf->Cell(40, 10, 'Rp ' . number_format($subtotal, 0, ',', '.'), 1);
     $pdf->Ln();

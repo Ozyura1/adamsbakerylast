@@ -12,7 +12,10 @@ if (!$product_id) {
 }
 
 // Get product details
-$product_result = $conn->query("SELECT * FROM products WHERE id = $product_id");
+$product_stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
+$product_stmt->bind_param('i', $product_id);
+$product_stmt->execute();
+$product_result = $product_stmt->get_result();
 if ($product_result->num_rows == 0) {
     header("Location: products.php");
     exit();
@@ -24,7 +27,10 @@ $reviews_query = "SELECT * FROM reviews WHERE product_id = $product_id ORDER BY 
 $reviews = $conn->query($reviews_query);
 
 // Calculate average rating
-$avg_result = $conn->query("SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM reviews WHERE product_id = $product_id");
+$avg_stmt = $conn->prepare("SELECT AVG(rating) as avg_rating, COUNT(*) as total FROM reviews WHERE product_id = ?");
+$avg_stmt->bind_param('i', $product_id);
+$avg_stmt->execute();
+$avg_result = $avg_stmt->get_result();
 $avg_data = $avg_result->fetch_assoc();
 $avg_rating = round($avg_data['avg_rating'], 1);
 $total_reviews = $avg_data['total'];
@@ -39,18 +45,18 @@ $total_reviews = $avg_data['total'];
         <!-- Product Image -->
         <div>
             <img src="/placeholder.svg?height=400&width=400" 
-                 alt="<?php echo $product['nama']; ?>" 
+                 alt="<?php echo htmlspecialchars($product['nama'], ENT_QUOTES, 'UTF-8'); ?>" 
                  style="width: 100%; height: 400px; object-fit: cover; border-radius: 15px;">
         </div>
         
         <!-- Product Info -->
         <div>
-            <div class="category"><?php echo $product['kategori']; ?></div>
-            <h2 style="margin: 1rem 0;"><?php echo $product['nama']; ?></h2>
+            <div class="category"><?php echo htmlspecialchars($product['kategori'], ENT_QUOTES, 'UTF-8'); ?></div>
+            <h2 style="margin: 1rem 0;"><?php echo htmlspecialchars($product['nama'], ENT_QUOTES, 'UTF-8'); ?></h2>
             
             <?php if ($product['deskripsi']): ?>
                 <p style="color: #6b5b47; font-size: 1.1rem; margin-bottom: 2rem;">
-                    <?php echo $product['deskripsi']; ?>
+                    <?php echo htmlspecialchars($product['deskripsi'], ENT_QUOTES, 'UTF-8'); ?>
                 </p>
             <?php endif; ?>
             
@@ -95,7 +101,7 @@ $total_reviews = $avg_data['total'];
         <div class="product-grid">
             <?php while ($review = $reviews->fetch_assoc()): ?>
                 <div class="product-card">
-                    <h4><?php echo $review['nama_reviewer']; ?></h4>
+                    <h4><?php echo htmlspecialchars($review['nama_reviewer'], ENT_QUOTES, 'UTF-8'); ?></h4>
                     
                     <div class="rating" style="margin: 0.5rem 0;">
                         <?php for ($i = 1; $i <= 5; $i++): ?>
@@ -104,7 +110,7 @@ $total_reviews = $avg_data['total'];
                     </div>
                     
                     <?php if ($review['review_text']): ?>
-                        <p style="font-style: italic; color: #6b5b47;">"<?php echo $review['review_text']; ?>"</p>
+                        <p style="font-style: italic; color: #6b5b47;">"<?php echo htmlspecialchars($review['review_text'], ENT_QUOTES, 'UTF-8'); ?>"</p>
                     <?php endif; ?>
                     
                     <small style="color: #8b5a3c;">

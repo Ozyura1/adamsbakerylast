@@ -1,4 +1,44 @@
 <?php
+// Helper function for image upload validation
+function validateAndUploadImage($file, $targetDir = "../uploads/") {
+    if (!isset($file) || $file['error'] != 0) {
+        return null;
+    }
+    
+    if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
+    
+    // Validate file size (max 5MB)
+    $maxFileSize = 5 * 1024 * 1024; // 5MB
+    if ($file['size'] > $maxFileSize) {
+        die("File terlalu besar. Maksimal ukuran: 5MB");
+    }
+    
+    // Validate file extension
+    $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowedExts = ['jpg', 'jpeg', 'png'];
+    if (!in_array($fileExt, $allowedExts)) {
+        die("Tipe file tidak diizinkan. Hanya JPG, JPEG, PNG yang diperbolehkan.");
+    }
+    
+    // Validate MIME type
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    $allowedMimes = ['image/jpeg', 'image/png'];
+    if (!in_array($mimeType, $allowedMimes)) {
+        die("MIME type tidak valid. Hanya JPEG dan PNG yang diperbolehkan.");
+    }
+    
+    // Generate secure filename
+    $fileName = time() . "_" . uniqid() . "." . $fileExt;
+    $filePath = $targetDir . $fileName;
+    
+    // Move uploaded file
+    if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+        die("Gagal upload file");
+    }
+    
 session_start();
 include '../backend/db.php';
 
@@ -14,90 +54,92 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'add':
-                $nama = $conn->real_escape_string($_POST['nama']);
-                $harga = $conn->real_escape_string($_POST['harga']);
-                $category_id = $conn->real_escape_string($_POST['category_id']);
-                $deskripsi = $conn->real_escape_string($_POST['deskripsi']);
+                $nama = $_POST['nama'];
+                $harga = $_POST['harga'];
+                $category_id = intval($_POST['category_id']);
+                $deskripsi = $_POST['deskripsi'];
 
                 $imageName = null;
-                if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-                    $targetDir = "../uploads/";
-                    if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
-
-                    $imageName = time() . "_" . basename($_FILES["foto"]["name"]);
-                    $targetFilePath = $targetDir . $imageName;
-
-                    $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
-                    $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-
-                    if (in_array($fileType, $allowedTypes)) {
-                        if (!move_uploaded_file($_FILES["foto"]["tmp_name"], $targetFilePath)) {
-                            die("Upload gagal");
-                        }
-                    }
+                if (isset($_FILES['foto'])) {
+                    $imageName = validateAndUploadImage($_FILES['foto']);
                 }
 
                 // Ambil nama kategori dari tabel categories
-                $catRes = $conn->query("SELECT nama FROM categories WHERE id='$category_id'");
+                $catStmt = $conn->prepare("SELECT nama FROM categories WHERE id = ?");
+                $catStmt->bind_param('i', $category_id);
+                $catStmt->execute();
+                $catRes = $catStmt->get_result();
                 $catRow = $catRes->fetch_assoc();
-                $kategori_nama = $conn->real_escape_string($catRow['nama']);
+                $kategori_nama = $catRow ? $catRow['nama'] : '';
+                $catStmt->close();
 
                 // Simpan ke tabel products (category_id dan kategori ikut diisi)
                 $sql = "INSERT INTO products (nama, harga, category_id, kategori, deskripsi, image) 
-                        VALUES ('$nama', '$harga', '$category_id', '$kategori_nama', '$deskripsi', '$imageName')";
-                if (!$conn->query($sql)) {
-                    die("Error INSERT: " . $conn->error);
+                        VALUES (?, ?, ?, ?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param('ssisss', $nama, $harga, $category_id, $kategori_nama, $deskripsi, $imageName);
+                if (!$stmt->execute()) {
+                    die("Error INSERT: " . $stmt->error);
                 }
+                $stmt->close();
                 break;
 
             case 'delete':
-                $id = $conn->real_escape_string($_POST['id']);
-                $conn->query("DELETE FROM products WHERE id = '$id'");
+                $id = intval($_POST['id']);
+                $stmt = $conn->prepare("DELETE FROM products WHERE id = ?");
+                $stmt->bind_param('i', $id);
+                $stmt->execute();
+                $stmt->close();
                 break;
 
             case 'update':
-                $id = $conn->real_escape_string($_POST['id']);
-                $nama = $conn->real_escape_string($_POST['nama']);
-                $harga = $conn->real_escape_string($_POST['harga']);
-                $category_id = $conn->real_escape_string($_POST['category_id']);
-                $deskripsi = $conn->real_escape_string($_POST['deskripsi']);
+                $id = intval($_POST['id']);
+                $nama = $_POST['nama'];
+                $harga = $_POST['harga'];
+                $category_id = intval($_POST['category_id']);
+                $deskripsi = $_POST['deskripsi'];
 
-                $sqlImg = "";
-                if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-                    $targetDir = "../uploads/";
-                    if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
-
-                    $imageName = time() . "_" . basename($_FILES["foto"]["name"]);
-                    $targetFilePath = $targetDir . $imageName;
-
-                    $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
-                    $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-
-                    if (in_array($fileType, $allowedTypes)) {
-                        if (move_uploaded_file($_FILES["foto"]["tmp_name"], $targetFilePath)) {
-                            $sqlImg = ", image = '$imageName'";
-                        }
-                    }
+                $imageName = null;
+                if (isset($_FILES['foto'])) {
+                    $imageName = validateAndUploadImage($_FILES['foto']);
                 }
 
                // Ambil nama kategori dari tabel categories
-                $catRes = $conn->query("SELECT nama FROM categories WHERE id='$category_id'");
+                $catStmt = $conn->prepare("SELECT nama FROM categories WHERE id = ?");
+                $catStmt->bind_param('i', $category_id);
+                $catStmt->execute();
+                $catRes = $catStmt->get_result();
                 $catRow = $catRes->fetch_assoc();
-                $kategori_nama = $conn->real_escape_string($catRow['nama']);
+                $kategori_nama = $catRow ? $catRow['nama'] : '';
+                $catStmt->close();
 
-                $sql = "UPDATE products SET 
-                        nama='$nama', 
-                        harga='$harga', 
-                        category_id='$category_id', 
-                        kategori='$kategori_nama',
-                        deskripsi='$deskripsi' 
-                        $sqlImg
-                        WHERE id='$id'";
-
-
-                if (!$conn->query($sql)) {
-                    die('Error UPDATE: ' . $conn->error);
+                if ($imageName) {
+                    $sql = "UPDATE products SET 
+                            nama=?, 
+                            harga=?, 
+                            category_id=?, 
+                            kategori=?,
+                            deskripsi=?, 
+                            image=?
+                            WHERE id=?";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param('ssisssi', $nama, $harga, $category_id, $kategori_nama, $deskripsi, $imageName, $id);
+                } else {
+                    $sql = "UPDATE products SET 
+                            nama=?, 
+                            harga=?, 
+                            category_id=?, 
+                            kategori=?,
+                            deskripsi=?
+                            WHERE id=?";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param('ssissi', $nama, $harga, $category_id, $kategori_nama, $deskripsi, $id);
                 }
+
+                if (!$stmt->execute()) {
+                    die('Error UPDATE: ' . $stmt->error);
+                }
+                $stmt->close();
                 break;
 
         }
@@ -106,8 +148,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // === Handle edit request ===
 if (isset($_GET['edit'])) {
-    $id = $conn->real_escape_string($_GET['edit']);
-    $editData = $conn->query("SELECT * FROM products WHERE id='$id'")->fetch_assoc();
+    $id = intval($_GET['edit']);
+    $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $editData = $res->fetch_assoc();
+    $stmt->close();
 }
 
 // Ambil semua produk + kategori
@@ -149,33 +196,33 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY nama ASC");
     <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="action" value="<?php echo $editData ? "update" : "add"; ?>">
         <?php if ($editData): ?>
-            <input type="hidden" name="id" value="<?php echo $editData['id']; ?>">
+            <input type="hidden" name="id" value="<?php echo (int)$editData['id']; ?>">
         <?php endif; ?>
 
         <label>Nama Produk:</label>
-        <input type="text" name="nama" required value="<?php echo $editData['nama'] ?? ''; ?>">
+        <input type="text" name="nama" required value="<?php echo isset($editData['nama']) ? htmlspecialchars($editData['nama'], ENT_QUOTES, 'UTF-8') : ''; ?>">
 
         <label>Harga:</label>
-        <input type="number" name="harga" required value="<?php echo $editData['harga'] ?? ''; ?>">
+        <input type="number" name="harga" required value="<?php echo isset($editData['harga']) ? htmlspecialchars($editData['harga'], ENT_QUOTES, 'UTF-8') : ''; ?>">
 
         <label>Kategori:</label>
         <select name="category_id" required>
             <option value="">Pilih Kategori</option>
             <?php while ($cat = $categories->fetch_assoc()): ?>
-                <option value="<?php echo $cat['id']; ?>" 
+                <option value="<?php echo (int)$cat['id']; ?>" 
                     <?php echo ($editData && $editData['category_id']==$cat['id']) ? "selected" : ""; ?>>
-                    <?php echo $cat['nama']; ?>
+                    <?php echo htmlspecialchars($cat['nama'], ENT_QUOTES, 'UTF-8'); ?>
                 </option>
             <?php endwhile; ?>
         </select>
 
         <label>Deskripsi:</label>
-        <textarea name="deskripsi" rows="3"><?php echo $editData['deskripsi'] ?? ''; ?></textarea>
+        <textarea name="deskripsi" rows="3"><?php echo isset($editData['deskripsi']) ? htmlspecialchars($editData['deskripsi'], ENT_QUOTES, 'UTF-8') : ''; ?></textarea>
 
         <label>Foto Produk:</label>
         <input type="file" name="foto" accept="image/*">
         <?php if ($editData && $editData['image']): ?>
-            <br><img src="../uploads/<?php echo $editData['image']; ?>" width="100">
+            <br><img src="../uploads/<?php echo htmlspecialchars($editData['image'], ENT_QUOTES, 'UTF-8'); ?>" width="100">
         <?php endif; ?>
 
         <button type="submit"><?php echo $editData ? "Update Produk" : "Tambah Produk"; ?></button>
@@ -188,21 +235,21 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY nama ASC");
         </tr>
         <?php while ($product = $products->fetch_assoc()): ?>
         <tr>
-            <td><?php echo $product['id']; ?></td>
-            <td><?php echo $product['nama']; ?></td>
-            <td><?php echo $product['kategori_nama']; ?></td>
+            <td><?php echo (int)$product['id']; ?></td>
+            <td><?php echo htmlspecialchars($product['nama'], ENT_QUOTES, 'UTF-8'); ?></td>
+            <td><?php echo htmlspecialchars($product['kategori_nama'], ENT_QUOTES, 'UTF-8'); ?></td>
             <td>Rp <?php echo number_format($product['harga'],0,',','.'); ?></td>
             <td>
                 <?php if ($product['image']): ?>
-                    <img src="../uploads/<?php echo $product['image']; ?>" width="80">
+                    <img src="../uploads/<?php echo htmlspecialchars($product['image'], ENT_QUOTES, 'UTF-8'); ?>" width="80">
                 <?php endif; ?>
             </td>
             <td>
-                <a href="?edit=<?php echo $product['id']; ?>">Edit</a>
+                <a href="?edit=<?php echo (int)$product['id']; ?>">Edit</a>
                 |
                 <form method="post" style="display:inline" onsubmit="return confirm('Yakin hapus produk ini?')">
                     <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
+                    <input type="hidden" name="id" value="<?php echo (int)$product['id']; ?>">
                     <button type="submit">Hapus</button>
                 </form>
             </td>

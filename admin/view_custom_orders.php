@@ -12,16 +12,20 @@ if (!isset($_SESSION['admin_logged_in'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_status'])) {
     $kontak_id = intval($_POST['kontak_id']);
     $new_status = $conn->real_escape_string($_POST['status']);
-    $update_sql = "UPDATE kontak SET status = '$new_status' WHERE id = $kontak_id";
-    $conn->query($update_sql);
+    $stmt = $conn->prepare("UPDATE kontak SET status = ? WHERE id = ?");
+    $stmt->bind_param('si', $new_status, $kontak_id);
+    $stmt->execute();
+    $stmt->close();
 }
 
 // --- UPDATE JAWABAN ADMIN UNTUK PERTANYAAN UMUM ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send_reply'])) {
     $question_id = intval($_POST['question_id']);
     $admin_reply = $conn->real_escape_string($_POST['admin_reply']);
-    $update_reply = "UPDATE pertanyaan_umum SET admin_reply = '$admin_reply' WHERE id = $question_id";
-    $conn->query($update_reply);
+    $stmt = $conn->prepare("UPDATE pertanyaan_umum SET admin_reply = ? WHERE id = ?");
+    $stmt->bind_param('si', $admin_reply, $question_id);
+    $stmt->execute();
+    $stmt->close();
 }
 
 // --- GET DATA PESANAN KUSTOM ---
@@ -133,13 +137,13 @@ function getStatusStyle($status) {
                 <div class="order-card">
                     <div class="order-header">
                         <div>
-                            <h3>Pesanan #<?= $order['id'] ?></h3>
+                            <h3>Pesanan #<?= (int)$order['id'] ?></h3>
                             <p style="color:#666;margin:0;">
                                 <?= date('d M Y H:i', strtotime($order['created_at'])) ?>
                             </p>
                         </div>
-                        <span class="status-badge" style="background:<?= $bgColor ?>;color:<?= $textColor ?>;">
-                            <?= ucfirst($order['status']) ?>
+                        <span class="status-badge" style="background:<?= htmlspecialchars($bgColor, ENT_QUOTES, 'UTF-8') ?>;color:<?= htmlspecialchars($textColor, ENT_QUOTES, 'UTF-8') ?>;">
+                            <?= htmlspecialchars(ucfirst($order['status']), ENT_QUOTES, 'UTF-8') ?>
                         </span>
                     </div>
 
@@ -157,7 +161,7 @@ function getStatusStyle($status) {
                         <label>Status:</label>
                         <select name="status">
                             <?php foreach(['pending','reviewed','quoted','confirmed','completed','cancelled'] as $st): ?>
-                                <option value="<?= $st ?>" <?= $order['status']==$st?'selected':''; ?>><?= ucfirst($st) ?></option>
+                                <option value="<?= htmlspecialchars($st, ENT_QUOTES, 'UTF-8') ?>" <?= $order['status']==$st?'selected':''; ?>><?= htmlspecialchars(ucfirst($st), ENT_QUOTES, 'UTF-8') ?></option>
                             <?php endforeach; ?>
                         </select>
                         <button type="submit" name="update_status">Update</button>
@@ -177,7 +181,7 @@ function getStatusStyle($status) {
                 <div class="order-card">
                     <div class="order-header">
                         <div>
-                            <h3>Pertanyaan #<?= $q['id'] ?></h3>
+                            <h3>Pertanyaan #<?= (int)$q['id'] ?></h3>
                             <p style="color:#666;margin:0;"><?= date('d M Y H:i', strtotime($q['created_at'])) ?></p>
                         </div>
                     </div>

@@ -226,10 +226,10 @@ function getPackageReviews($conn, $package_id) {
                     <img src="images/noimage.png" alt="Tidak ada gambar">
                 <?php endif; ?>
 
-                <h4><?php echo $package['nama']; ?></h4>
+                <h4><?php echo htmlspecialchars($package['nama'], ENT_QUOTES, 'UTF-8'); ?></h4>
                 
                 <p style="color: #6b5b47; font-size: 0.9rem; margin-bottom: 1rem;">
-                    <?php echo $package['deskripsi']; ?>
+                    <?php echo htmlspecialchars($package['deskripsi'], ENT_QUOTES, 'UTF-8'); ?>
                 </p>
                 
                 <div class="price">Rp <?php echo number_format($package['harga'], 0, ',', '.'); ?></div>

@@ -20,17 +20,21 @@ while ($cat = $categories->fetch_assoc()) {
     $category_name = $cat['nama'];
     $category_id = $cat['id'];
 
-    $result = $conn->query("
+    $stmt = $conn->prepare("
         SELECT p.*, c.nama AS kategori_nama
         FROM products p
         JOIN categories c ON p.category_id = c.id
-        WHERE p.category_id = '$category_id'
+        WHERE p.category_id = ?
         ORDER BY p.id LIMIT 3
     ");
+    $stmt->bind_param('i', $category_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     while ($product = $result->fetch_assoc()) {
         $featured_products[] = $product;
     }
+    $stmt->close();
 }
 
 
@@ -131,9 +135,9 @@ $recent_reviews = $conn->query("
                             <?php endif; ?>
 
                             
-                            <h4><?php echo $package['nama']; ?></h4>
+                            <h4><?php echo htmlspecialchars($package['nama'], ENT_QUOTES, 'UTF-8'); ?></h4>
                             <p style="color: #6b5b47; font-size: 0.9rem; margin-bottom: 1rem;">
-                                <?php echo substr($package['deskripsi'], 0, 80) . '...'; ?>
+                                <?php echo htmlspecialchars(substr($package['deskripsi'], 0, 80), ENT_QUOTES, 'UTF-8'); ?>...
                             </p>
                             <div class="price">Rp <?php echo number_format($package['harga'], 0, ',', '.'); ?></div>
                             
@@ -176,11 +180,11 @@ $recent_reviews = $conn->query("
                         <?php endif; ?>
 
                             
-                            <h4><?php echo $product['nama']; ?></h4>
+                            <h4><?php echo htmlspecialchars($product['nama'], ENT_QUOTES, 'UTF-8'); ?></h4>
                             
                             <?php if ($product['deskripsi']): ?>
                                 <p style="color: #6b5b47; font-size: 0.9rem; margin-bottom: 1rem;">
-                                    <?php echo substr($product['deskripsi'], 0, 60) . '...'; ?>
+                                    <?php echo htmlspecialchars(substr($product['deskripsi'], 0, 60), ENT_QUOTES, 'UTF-8'); ?>...
                                 </p>
                             <?php endif; ?>
                             

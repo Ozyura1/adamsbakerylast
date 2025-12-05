@@ -14,8 +14,12 @@ $transaction_id = isset($_GET['transaction_id']) ? intval($_GET['transaction_id'
 $whatsapp_status = null;
 
 if ($transaction_id) {
-    $result = $conn->query("SELECT * FROM transactions WHERE id = $transaction_id");
+    $stmt = $conn->prepare("SELECT * FROM transactions WHERE id = ?");
+    $stmt->bind_param('i', $transaction_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $transaction = $result->fetch_assoc();
+    $stmt->close();
     
     $items_query = "
         SELECT ti.*, 

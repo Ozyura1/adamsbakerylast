@@ -2,15 +2,18 @@
 include 'db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nama = $conn->real_escape_string($_POST['nama']);
-    $harga = $conn->real_escape_string($_POST['harga']);
+    $nama = $_POST['nama'];
+    $harga = $_POST['harga'];
 
-    $sql = "INSERT INTO products (nama, harga) VALUES ('$nama', '$harga')";
-    if ($conn->query($sql) === TRUE) {
+    $sql = "INSERT INTO products (nama, harga) VALUES (?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('ss', $nama, $harga);
+    if ($stmt->execute()) {
         echo "Produk berhasil ditambahkan!";
     } else {
-        echo "Error: " . $conn->error;
+        echo "Error: " . $stmt->error;
     }
+    $stmt->close();
 }
 ?>
 

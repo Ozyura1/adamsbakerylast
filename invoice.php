@@ -8,12 +8,15 @@ $items = null;       // ✅ inisialisasi juga untuk keamanan
 $transaction_id = isset($_GET['transaction_id']) ? intval($_GET['transaction_id']) : 0;
 
 if ($transaction_id > 0) {
-    $result = $conn->query("SELECT * FROM transactions WHERE id = $transaction_id");
+    $stmt = $conn->prepare("SELECT * FROM transactions WHERE id = ?");
+    $stmt->bind_param('i', $transaction_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result && $result->num_rows > 0) {
         $transaction = $result->fetch_assoc();
 
-        $items_query = "
+        $items_stmt = $conn->prepare("
             SELECT ti.*, 
                    CASE 
                        WHEN ti.item_type = 'product' THEN p.nama
@@ -22,10 +25,13 @@ if ($transaction_id > 0) {
             FROM transaction_items ti
             LEFT JOIN products p ON ti.product_id = p.id
             LEFT JOIN packages pkg ON ti.package_id = pkg.id
-            WHERE ti.transaction_id = $transaction_id
-        ";
-        $items = $conn->query($items_query);
+            WHERE ti.transaction_id = ?
+        ");
+        $items_stmt->bind_param('i', $transaction_id);
+        $items_stmt->execute();
+        $items = $items_stmt->get_result();
     }
+    $stmt->close();
 }
 ?>
 
@@ -35,10 +41,10 @@ if ($transaction_id > 0) {
         <hr><br>
 
         <p><strong>No. Invoice:</strong> INV-<?php echo str_pad($transaction['id'], 5, '0', STR_PAD_LEFT); ?></p>
-        <p><strong>Nama Pembeli:</strong> <?php echo htmlspecialchars($transaction['nama_pembeli']); ?></p>
-        <p><strong>Email:</strong> <?php echo htmlspecialchars($transaction['email']); ?></p>
+        <p><strong>Nama Pembeli:</strong> <?php echo htmlspecialchars($transaction['nama_pembeli'], ENT_QUOTES, 'UTF-8'); ?></p>
+        <p><strong>Email:</strong> <?php echo htmlspecialchars($transaction['email'], ENT_QUOTES, 'UTF-8'); ?></p>
         <p><strong>Tanggal:</strong> <?php echo date('d-m-Y', strtotime($transaction['created_at'])); ?></p>
-        <p><strong>Status:</strong> <?php echo ucfirst($transaction['status']); ?></p>
+        <p><strong>Status:</strong> <?php echo htmlspecialchars(ucfirst($transaction['status']), ENT_QUOTES, 'UTF-8'); ?></p>
         <br>
 
         <?php if ($items && $items->num_rows > 0): ?>
