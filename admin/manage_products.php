@@ -39,6 +39,9 @@ function validateAndUploadImage($file, $targetDir = "../uploads/") {
         die("Gagal upload file");
     }
     
+    return $fileName;
+}
+
 session_start();
 include '../backend/db.php';
 
