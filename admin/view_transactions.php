@@ -213,6 +213,20 @@ $transactions = $conn->query("SELECT * FROM transactions ORDER BY created_at DES
         <div class="alert alert-error"><?php echo $error; ?></div>
     <?php endif; ?>
     
+    <?php if (isset($_SESSION['info'])): ?>
+        <div class="alert alert-info" style="background:#d1ecf1; color:#0c5460; border:1px solid #bee5eb; padding:12px; border-radius:6px; margin-bottom:15px;">
+            <?php echo htmlspecialchars($_SESSION['info']); ?>
+        </div>
+        <?php unset($_SESSION['info']); ?>
+    <?php endif; ?>
+    
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-error" style="background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; padding:12px; border-radius:6px; margin-bottom:15px;">
+            <?php echo htmlspecialchars($_SESSION['error']); ?>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+    
     <h2>Daftar Transaksi</h2>
     <table>
         <thead>

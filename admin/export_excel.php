@@ -24,6 +24,12 @@ if ($export_type === 'today') {
         AND status = 'confirmed'
         ORDER BY created_at DESC
     ");
+    if (!$stmt) {
+        error_log("Prepare error (today): " . $conn->error);
+        $_SESSION['error'] = 'Error query: ' . $conn->error;
+        header("Location: view_transactions.php");
+        exit();
+    }
     $stmt->bind_param('s', $tanggal_hari_ini);
     $filename_prefix = "laporan_hari_ini_";
 } else {
@@ -33,15 +39,31 @@ if ($export_type === 'today') {
         WHERE status = 'confirmed'
         ORDER BY created_at DESC
     ");
+    if (!$stmt) {
+        error_log("Prepare error (all): " . $conn->error);
+        $_SESSION['error'] = 'Error query: ' . $conn->error;
+        header("Location: view_transactions.php");
+        exit();
+    }
     $filename_prefix = "laporan_semua_";
 }
 
-$stmt->execute();
+if (!$stmt->execute()) {
+    error_log("Execute error: " . $stmt->error);
+    $_SESSION['error'] = 'Error execute: ' . $stmt->error;
+    header("Location: view_transactions.php");
+    exit();
+}
+
 $result = $stmt->get_result();
 
 // Jika tidak ada transaksi
 if ($result->num_rows == 0) {
-    $_SESSION['info'] = 'Tidak ada transaksi yang bisa diekspor.';
+    if ($export_type === 'today') {
+        $_SESSION['info'] = 'Tidak ada transaksi confirmed hari ini.';
+    } else {
+        $_SESSION['info'] = 'Tidak ada transaksi confirmed.';
+    }
     header("Location: view_transactions.php");
     exit();
 }
