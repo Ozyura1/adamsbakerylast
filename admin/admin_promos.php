@@ -44,6 +44,7 @@ $promos = $conn->query("SELECT * FROM promos ORDER BY created_at DESC");
         <a href="manage_products.php">Kelola Produk</a> |
         <a href="manage_packages.php">Kelola Paket</a> |
         <a href="view_transactions.php">Transaksi</a> |
+        <a href="wa_notifications.php">Notifikasi WA</a> |
         <a href="admin_promos.php">Promo</a> |
         <a href="view_reviews.php">Ulasan</a> |
         <a href="view_custom_orders.php">Pesanan & Pertanyaan</a> |
