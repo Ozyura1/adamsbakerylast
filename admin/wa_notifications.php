@@ -52,11 +52,25 @@ $notifications = $conn->query($sql);
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Riwayat Notifikasi WA - Admin</title>
+    <title>Dashboard Admin - Adam Bakery</title>
     <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="icon" type="image/png" href="/assets/images/logoadambakery.png">
 </head>
 <body>
-<?php include __DIR__ . '/../includes/header.php'; ?>
+<header class="admin-header">
+    <h1>Dashboard Admin - Adam Bakery</h1>
+    <nav class="admin-nav">
+        <a href="dashboard.php">Dashboard</a> |
+        <a href="manage_products.php">Kelola Produk</a> |
+        <a href="manage_packages.php">Kelola Paket</a> |
+        <a href="view_transactions.php">Transaksi</a> |
+        <a href="wa_notifications.php">Notifikasi WA</a> |
+        <a href="admin_promos.php">Promo</a> |
+        <a href="view_reviews.php">Ulasan</a> |
+        <a href="view_custom_orders.php">Pesanan & Pertanyaan</a> |
+        <a href="logout.php">Logout</a>
+    </nav>
+</header>
 <main>
     <h2>Riwayat Notifikasi WhatsApp</h2>
 
