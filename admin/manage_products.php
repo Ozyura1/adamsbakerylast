@@ -226,18 +226,19 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY nama ASC");
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Kelola Produk - Admin</title>
+    <title>Dashboard Admin - Adam Bakery</title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="icon" type="image/png" href="/assets/images/logoadambakery.png">
 </head>
 <body>
 <header class="admin-header">
-    <h1>Kelola Produk - Adam Bakery</h1>
+    <h1>Dashboard Admin - Adam Bakery</h1>
     <nav class="admin-nav">
         <a href="dashboard.php">Dashboard</a> |
         <a href="manage_products.php">Kelola Produk</a> |
         <a href="manage_packages.php">Kelola Paket</a> |
         <a href="view_transactions.php">Transaksi</a> |
+        <a href="wa_notifications.php">Notifikasi WA</a> |
         <a href="admin_promos.php">Promo</a> |
         <a href="view_reviews.php">Ulasan</a> |
         <a href="view_custom_orders.php">Pesanan & Pertanyaan</a> |

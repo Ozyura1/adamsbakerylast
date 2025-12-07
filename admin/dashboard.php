@@ -39,8 +39,8 @@ $stats['promos'] = $result->fetch_assoc()['count'];
 
 // Recent transactions
 $recent_transactions = $conn->query("SELECT * FROM transactions ORDER BY created_at DESC LIMIT 5");
-?>
 
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
