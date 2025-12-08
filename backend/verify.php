@@ -14,70 +14,117 @@ $redirect = false;
 $styleColor = '#4CAF50'; // Default: hijau sukses
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $otp_code = $conn->real_escape_string($_POST['otp_code']);
+    // Ambil input OTP dari form
+    $otp_code = trim($_POST['otp_code']);
 
-    // Ambil user berdasarkan EMAIL di session
-    $sql = "SELECT * FROM customer_users WHERE email='$email' LIMIT 1";
-    $result = $conn->query($sql);
+    // Ambil OTP dan expiry dari SESSION (bukan dari database)
+    $otp_session = $_SESSION['pending_otp'] ?? null;
+    $otp_expires = $_SESSION['pending_otp_expires'] ?? null;
 
-    if ($result && $result->num_rows > 0) {
-        $user = $result->fetch_assoc();
+    // Inisialisasi counter percobaan OTP di session jika belum ada
+    if (!isset($_SESSION['pending_otp_attempts'])) {
+        $_SESSION['pending_otp_attempts'] = 0;
+    }
 
+    // Validasi adanya data OTP di session
+    if ($otp_session === null || $otp_expires === null) {
+        $styleColor = '#FF9800';
+        $message = "<h2 style='color:$styleColor;'>⚠️ Tidak ada proses verifikasi aktif</h2>
+                    <p>Silakan daftar ulang atau minta kirim ulang OTP.</p>";
+    } else {
         // Cek expired
-        if (strtotime($user['otp_expires_at']) < time()) {
+        if (time() > $otp_expires) {
             $styleColor = '#FF9800';
             $message = "<h2 style='color:$styleColor;'>⚠️ OTP Kadaluarsa</h2>
                         <p>Silahkan minta OTP baru.</p>";
-
-        // Cek attempts
-        } elseif ($user['otp_attempts'] >= 3) {
+            // Optionally clear pending OTP to force resend
+            unset($_SESSION['pending_otp']);
+            unset($_SESSION['pending_otp_expires']);
+            unset($_SESSION['pending_otp_attempts']);
+        }
+        // Cek attempts (maks 3)
+        elseif ($_SESSION['pending_otp_attempts'] >= 3) {
             $styleColor = '#FF9800';
             $message = "<h2 style='color:$styleColor;'>⚠️ Percobaan Terlalu Banyak</h2>
                         <p>Silahkan kirim ulang OTP.</p>";
-
-        // Cek OTP benar
-        } elseif ($user['otp_code'] === $otp_code) {
-            $update = "UPDATE customer_users 
-                       SET is_verified=1, otp_code=NULL, otp_expires_at=NULL, otp_attempts=0 
-                       WHERE id=" . $user['id'];
-            $conn->query($update);
-
-            // HAPUS SESSION
-            unset($_SESSION['pending_email']);
-
-            $message = "
-                <h2 style='color:$styleColor;'>✅ Verifikasi Berhasil!</h2>
-                <p>Akun Anda sudah aktif. Anda akan diarahkan ke halaman login dalam <b>3 detik</b>.</p>
-                <a href='../customer_auth.php' style='
-                    display:inline-block;
-                    margin-top:10px;
-                    padding:10px 20px;
-                    background:$styleColor;
-                    color:white;
-                    text-decoration:none;
-                    border-radius:8px;
-                    font-weight:bold;
-                '>Login Sekarang</a>
-            ";
-
-            $redirect = true;
-
-        } else {
-            $conn->query("UPDATE customer_users 
-                          SET otp_attempts = otp_attempts + 1 
-                          WHERE id=" . $user['id']);
-
-            $styleColor = '#f44336';
-            $message = "<h2 style='color:$styleColor;'>❌ OTP Salah</h2>
-                        <p>Masukkan kode OTP yang benar.</p>";
         }
+        // Cek OTP benar
+        elseif (hash_equals((string)$otp_session, (string)$otp_code)) {
+            // Pastikan ada data pendaftaran di session
+            if (!isset($_SESSION['pending_registration']) || !is_array($_SESSION['pending_registration'])) {
+                $styleColor = '#FF9800';
+                $message = "<h2 style='color:$styleColor;'>⚠️ Data pendaftaran tidak ditemukan</h2>
+                            <p>Silakan daftar ulang.</p>";
+            } else {
+                // =========== OTP BENAR, BUAT AKUN BARU ===========
+                $pending = $_SESSION['pending_registration'];
 
-    } else {
-        $styleColor = '#FF9800';
-        $message = "<h2 style='color:$styleColor;'>⚠️ Email tidak ditemukan</h2>";
+                $stmt = $conn->prepare("
+                    INSERT INTO customer_users
+                    (nama_lengkap, email, password, phone, alamat, is_verified)
+                    VALUES (?, ?, ?, ?, ?, 1)
+                ");
+
+                if ($stmt) {
+                    $stmt->bind_param(
+                        "sssss",
+                        $pending['nama_lengkap'],
+                        $pending['email'],
+                        $pending['password'],
+                        $pending['phone'],
+                        $pending['alamat']
+                    );
+                    $stmt->execute();
+                    $stmt->close();
+
+                    // HAPUS SESSION pending semua
+                    unset($_SESSION['pending_email']);
+                    unset($_SESSION['pending_registration']);
+                    unset($_SESSION['pending_otp']);
+                    unset($_SESSION['pending_otp_expires']);
+                    unset($_SESSION['pending_otp_attempts']);
+
+                    $message = "
+                        <h2 style='color:$styleColor;'>✅ Verifikasi Berhasil!</h2>
+                        <p>Akun Anda sudah aktif. Anda akan diarahkan ke halaman login dalam <b>3 detik</b>.</p>
+                        <a href='../customer_auth.php' style='
+                            display:inline-block;
+                            margin-top:10px;
+                            padding:10px 20px;
+                            background:$styleColor;
+                            color:white;
+                            text-decoration:none;
+                            border-radius:8px;
+                            font-weight:bold;
+                        '>Login Sekarang</a>
+                    ";
+
+                    $redirect = true;
+                } else {
+                    // prepare gagal
+                    $styleColor = '#FF9800';
+                    $message = "<h2 style='color:$styleColor;'>⚠️ Terjadi kesalahan server</h2>
+                                <p>Gagal membuat akun. Silakan coba lagi nanti.</p>";
+                }
+            }
+        } else {
+            // OTP salah -> increment attempt counter
+            $_SESSION['pending_otp_attempts'] += 1;
+
+            // Jika sudah mencapai limit, beri tanda
+            if ($_SESSION['pending_otp_attempts'] >= 3) {
+                $styleColor = '#FF9800';
+                $message = "<h2 style='color:$styleColor;'>⚠️ Percobaan Terlalu Banyak</h2>
+                            <p>Silahkan kirim ulang OTP.</p>";
+            } else {
+                $styleColor = '#f44336';
+                $remaining = 3 - $_SESSION['pending_otp_attempts'];
+                $message = "<h2 style='color:$styleColor;'>❌ OTP Salah</h2>
+                            <p>Masukkan kode OTP yang benar. Sisa percobaan: <b>$remaining</b>.</p>";
+            }
+        }
     }
 }
-
 $conn->close();
 ?>
 

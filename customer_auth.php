@@ -102,40 +102,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             if ($checkResult->num_rows > 0) {
                 $error = 'Email sudah terdaftar!';
             } else {
+
+                // --- FIX START (TIDAK INSERT DB SEBELUM OTP) ---
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                $otpExpires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
-                
-                $insertStmt = $conn->prepare('
-                    INSERT INTO customer_users 
-                    (nama_lengkap, email, password, phone, alamat, is_verified, otp_code, otp_expires_at)
-                    VALUES (?, ?, ?, ?, ?, 0, ?, ?)
-                ');
-                $insertStmt->bind_param(
-                    'sssssss',
-                    $namaLengkap,
-                    $email,
-                    $hashedPassword,
-                    $phone,
-                    $alamat,
-                    $otp,
-                    $otpExpires
-                );
-                
-                if ($insertStmt->execute()) {
-                    logActivity('REGISTRATION_SUCCESS', 'New customer registered: ' . $email);
-                    
-                    // KIRIM OTP KE EMAIL
-                    require_once __DIR__ . '/backend/mailer.php';
-                    sendVerificationEmail($email, $otp);
+                $otpExpires = time() + (5 * 60); // Expired 5 menit
 
-                    $_SESSION['pending_email'] = $email;
-                    redirectWithMessage('backend/verify.php', 'Registrasi berhasil. Silakan verifikasi email Anda.', 'success');
-                } else {
-                    $error = 'Terjadi kesalahan saat mendaftar. Silakan coba lagi.';
-                }
-                
-                $insertStmt->close();
+                // Simpan data ke session
+                $_SESSION['pending_registration'] = [
+                    'nama_lengkap' => $namaLengkap,
+                    'email'        => $email,
+                    'password'     => $hashedPassword,
+                    'phone'        => $phone,
+                    'alamat'       => $alamat
+                ];
+
+                $_SESSION['pending_email'] = $email;
+                $_SESSION['pending_otp'] = $otp;
+                $_SESSION['pending_otp_expires'] = $otpExpires;
+                $_SESSION['pending_otp_attempts'] = 0;
+
+                // Kirim OTP
+                require_once __DIR__ . '/backend/mailer.php';
+                sendVerificationEmail($email, $otp);
+
+                redirectWithMessage('backend/verify.php', 'Registrasi berhasil. Silakan verifikasi email Anda.', 'success');
+                // --- FIX END ---
+
             }
             
             $checkStmt->close();
@@ -149,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login/Daftar - <?php echo APP_NAME; ?></title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <?php require_once __DIR__ . '/includes/header.php'; ?>
