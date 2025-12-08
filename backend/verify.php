@@ -1,41 +1,54 @@
 <?php
 require 'db.php';
+session_start();
 
+// ====== CEGAH AKSES TANPA EMAIL ======
+if (!isset($_SESSION['pending_email'])) {
+    header("Location: ../customer_auth.php");
+    exit;
+}
+
+$email = $_SESSION['pending_email']; // email sedang menunggu OTP
 $message = '';
 $redirect = false;
-$styleColor = '#4CAF50'; // hijau default (sukses)
+$styleColor = '#4CAF50'; // Default: hijau sukses
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $conn->real_escape_string($_POST['email']);
     $otp_code = $conn->real_escape_string($_POST['otp_code']);
 
-    // Cek user berdasarkan email
+    // Ambil user berdasarkan EMAIL di session
     $sql = "SELECT * FROM customer_users WHERE email='$email' LIMIT 1";
     $result = $conn->query($sql);
 
     if ($result && $result->num_rows > 0) {
         $user = $result->fetch_assoc();
 
-        // Cek apakah OTP sudah expired
+        // Cek expired
         if (strtotime($user['otp_expires_at']) < time()) {
             $styleColor = '#FF9800';
             $message = "<h2 style='color:$styleColor;'>⚠️ OTP Kadaluarsa</h2>
-                        <p>Silahkan minta ulang kode verifikasi.</p>";
+                        <p>Silahkan minta OTP baru.</p>";
+
+        // Cek attempts
         } elseif ($user['otp_attempts'] >= 3) {
             $styleColor = '#FF9800';
-            $message = "<h2 style='color:$styleColor;'>⚠️ Terlalu Banyak Percobaan</h2>
-                        <p>Anda telah melebihi batas percobaan OTP. Silahkan kirim ulang OTP.</p>";
+            $message = "<h2 style='color:$styleColor;'>⚠️ Percobaan Terlalu Banyak</h2>
+                        <p>Silahkan kirim ulang OTP.</p>";
+
+        // Cek OTP benar
         } elseif ($user['otp_code'] === $otp_code) {
-            // Verifikasi berhasil
             $update = "UPDATE customer_users 
                        SET is_verified=1, otp_code=NULL, otp_expires_at=NULL, otp_attempts=0 
                        WHERE id=" . $user['id'];
             $conn->query($update);
 
+            // HAPUS SESSION
+            unset($_SESSION['pending_email']);
+
             $message = "
                 <h2 style='color:$styleColor;'>✅ Verifikasi Berhasil!</h2>
-                <p>Akun Anda telah aktif. Anda akan diarahkan ke halaman login dalam <b>3 detik</b>.</p>
-                <a href='https://adambakery.thebamfams.web.id/customer_auth.php' style='
+                <p>Akun Anda sudah aktif. Anda akan diarahkan ke halaman login dalam <b>3 detik</b>.</p>
+                <a href='../customer_auth.php' style='
                     display:inline-block;
                     margin-top:10px;
                     padding:10px 20px;
@@ -46,18 +59,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     font-weight:bold;
                 '>Login Sekarang</a>
             ";
+
             $redirect = true;
+
         } else {
-            // OTP salah → tambah attempts
-            $conn->query("UPDATE customer_users SET otp_attempts = otp_attempts + 1 WHERE id=" . $user['id']);
+            $conn->query("UPDATE customer_users 
+                          SET otp_attempts = otp_attempts + 1 
+                          WHERE id=" . $user['id']);
+
             $styleColor = '#f44336';
             $message = "<h2 style='color:$styleColor;'>❌ OTP Salah</h2>
-                        <p>Kode yang Anda masukkan tidak sesuai. Coba lagi.</p>";
+                        <p>Masukkan kode OTP yang benar.</p>";
         }
+
     } else {
         $styleColor = '#FF9800';
-        $message = "<h2 style='color:$styleColor;'>⚠️ Email Tidak Ditemukan</h2>
-                    <p>Pastikan Anda memasukkan email yang benar.</p>";
+        $message = "<h2 style='color:$styleColor;'>⚠️ Email tidak ditemukan</h2>";
     }
 }
 
@@ -70,9 +87,10 @@ $conn->close();
     <meta charset="UTF-8">
     <title>Verifikasi OTP</title>
     <?php if ($redirect): ?>
-        <meta http-equiv="refresh" content="3;url=https://adambakery.thebamfams.web.id/customer_auth.php?verified=1">
+        <meta http-equiv="refresh" content="3;url=../customer_auth.php?verified=1">
     <?php endif; ?>
 </head>
+
 <body style="font-family: Arial, sans-serif; background: #f5f5f5;">
     <div style="
         max-width: 400px;
@@ -85,15 +103,14 @@ $conn->close();
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     ">
         <h2>Verifikasi Akun</h2>
-        <form method="POST" style="margin-top:15px;">
-            <input type="email" name="email" placeholder="Masukkan Email" required style="
-                width: 90%;
-                padding: 10px;
-                margin-bottom: 10px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-            "><br>
-            <input type="text" name="otp_code" placeholder="Masukkan Kode OTP" required style="
+        <p>Email: <b><?= htmlspecialchars($email) ?></b></p>
+
+        <form method="POST" style="margin-top: 15px;">
+
+            <!-- Email otomatis dari session (HIDDEN) -->
+            <input type="hidden" name="email" value="<?= $email ?>">
+
+            <input type="text" name="otp_code" placeholder="Masukkan OTP" required style="
                 width: 90%;
                 padding: 10px;
                 margin-bottom: 10px;
@@ -102,6 +119,7 @@ $conn->close();
                 letter-spacing: 2px;
                 text-align: center;
             "><br>
+
             <button type="submit" style="
                 background: #4CAF50;
                 color: white;
@@ -112,6 +130,7 @@ $conn->close();
                 cursor: pointer;
             ">Verifikasi</button>
         </form>
+
         <div style="margin-top: 15px;"><?= $message ?></div>
     </div>
 </body>
