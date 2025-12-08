@@ -359,7 +359,7 @@ textarea {
 }
 
 .password-toggle {
-  position: absolute;
+  position:relative;
   right: var(--spacing-md);
   top: 50%;
   transform: translateY(-50%);
