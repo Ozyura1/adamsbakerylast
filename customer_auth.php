@@ -143,6 +143,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login/Daftar - <?php echo APP_NAME; ?></title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+    .password-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .password-input-wrapper input {
+        width: 100%;
+        padding-right: 45px; 
+        box-sizing: border-box;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        transition: 0.2s;
+    }
+
+    .password-toggle:hover {
+        opacity: 1;
+    }
+
+    
+    /* PINDAHKAN ICON KE KIRI SAAT MOBILE */
+    @media (max-width: 480px) {
+    .password-toggle {
+        right: auto !important;
+        left: 240px !important; 
+
+        font-size: 12px;   /* icon lebih kecil */
+        width: 22px;       /* area klik diperkecil */
+        height: 22px;
+        line-height: 22px;
+        padding: 0;        /* hilangkan padding agar ripple kecil */
+    }
+
+    .password-input-wrapper input {
+        padding-right: 12px !important;
+    }
+}
+
+</style>
+
 </head>
 <body>
     <?php require_once __DIR__ . '/includes/header.php'; ?>
