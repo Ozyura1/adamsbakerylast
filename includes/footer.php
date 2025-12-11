@@ -23,6 +23,13 @@
                 </p>
                 <p>Email: info@adambakery.com</p>
                 <p>Telepon: +62 815-4836-2773</p>
+                <p>
+                     <a href="https://www.instagram.com/adamsbakerytegal?igsh=MTJoZ3FqcjF3ZWhiaw==" 
+                         target="_blank" 
+                         rel="noopener noreferrer">
+                     Instagram: @adamsbakerytegal
+                      </a>
+                </p>
             </div>
             
             <div class="footer-section">
