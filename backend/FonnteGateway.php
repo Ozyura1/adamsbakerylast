@@ -11,29 +11,22 @@ class FonnteGateway {
     }
 
     public function normalizePhoneNumber($phone) {
-        if (!$phone) {
-            return null;
-        }
+         if (!$phone) return null;
 
-        // Remove all non-numeric characters except +
-        $phone = preg_replace('/[^0-9+]/', '', $phone);
+    // Remove everything except digits
+    $phone = preg_replace('/[^0-9]/', '', $phone);
 
-        // If already in +62 format
-        if (strpos($phone, '+62') === 0) {
+    // 08xxxx → 628xxxx
+         if (strpos($phone, '0') === 0) {
+           return '62' . substr($phone, 1);
+    }
+
+    // already 62xxxx
+         if (strpos($phone, '62') === 0) {
             return $phone;
-        }
+    }
 
-        // If starts with 0, replace with +62
-        if (strpos($phone, '0') === 0) {
-            return '+62' . substr($phone, 1);
-        }
-
-        // If no prefix, add +62
-        if (strpos($phone, '+') !== 0) {
-            return '+62' . $phone;
-        }
-
-        return $phone;
+    return '62' . $phone;
     }
 
     public function sendMessage($target, $message) {
@@ -54,6 +47,8 @@ class FonnteGateway {
             return ['status' => false, 'error' => 'Format nomor tidak valid', 'code' => 'INVALID_PHONE'];
         }
 
+        error_log("TEST SEND TO: " . $normalizedTarget);
+
         $curl = curl_init();
 
         curl_setopt_array($curl, [
@@ -68,7 +63,6 @@ class FonnteGateway {
             CURLOPT_POSTFIELDS => [
                 'target' => $normalizedTarget,
                 'message' => $message,
-                'countryCode' => '62'
             ],
             CURLOPT_HTTPHEADER => [
                 'Authorization: ' . $this->token
