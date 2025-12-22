@@ -6,7 +6,6 @@
 
 require_once __DIR__ . '/fonnte_config.php';
 require_once __DIR__ . '/FonnteGateway.php';
-require_once __DIR__ . '/process_contact.php';
 
 class AdminNotifier
 {
