@@ -1,7 +1,11 @@
 <?php
 include 'db.php';
 include 'csrf.php';
-require_once __DIR__ . '/admin_notifier.php';
+require_once __DIR__ . '/AdminNotifier.php';
+
+$notifier = new AdminNotifier($conn);
+$notifier->notifyNewCustomOrder($kontak_id);
+
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
