@@ -160,6 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     .password-toggle {
         position: absolute;
         right: 10px;
+        left: -35px;
         background: none;
         border: none;
         cursor: pointer;
@@ -170,6 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         justify-content: center;
         opacity: 0.7;
         transition: 0.2s;
+        bottom: -20px;
     }
 
     .password-toggle:hover {
@@ -181,13 +183,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     @media (max-width: 480px) {
     .password-toggle {
         right: auto !important;
-        left: 240px !important; 
+        left: -30px !important; 
 
         font-size: 12px;   /* icon lebih kecil */
         width: 22px;       /* area klik diperkecil */
         height: 22px;
         line-height: 22px;
         padding: 0;        /* hilangkan padding agar ripple kecil */
+        bottom: -10px;
     }
 
     .password-input-wrapper input {
