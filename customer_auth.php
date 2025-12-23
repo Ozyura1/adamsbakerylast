@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     .password-toggle {
         position: absolute;
         right: 10px;
-        left: -35px;
+        left: -40px;
         background: none;
         border: none;
         cursor: pointer;
