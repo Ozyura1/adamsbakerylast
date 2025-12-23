@@ -1,7 +1,7 @@
 <?php
 include 'db.php';
 include 'csrf.php';
-require_once __DIR__ . '/AdminNotifier.php';
+require_once __DIR__ . '/admin_notifier.php';
 
 session_start();
 
