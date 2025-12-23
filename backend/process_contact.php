@@ -1,7 +1,10 @@
 <?php
 include 'db.php';
 include 'csrf.php';
-require_once __DIR__ . '/admin_notifier.php';
+
+// --- Tambahkan dependensi Fonnte ---
+require_once __DIR__ . '/fonnte_config.php';
+require_once __DIR__ . '/FonnteGateway.php';
 
 session_start();
 
@@ -26,10 +29,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $event_date = null;
     $jumlah_porsi = null;
 
-    // Jika custom order, ambil field tambahan
     if ($jenis_kontak == 'custom_order') {
-        $custom_order_details = isset($_POST['custom_order_details']) ? $_POST['custom_order_details'] : null;
-        $budget_range = isset($_POST['budget_range']) ? $_POST['budget_range'] : null;
+        $custom_order_details = isset($_POST['custom_order_details']) ? trim($_POST['custom_order_details']) : null;
+        $budget_range = isset($_POST['budget_range']) ? trim($_POST['budget_range']) : null;
         $event_date = isset($_POST['event_date']) && !empty($_POST['event_date']) ? $_POST['event_date'] : null;
         $jumlah_porsi = isset($_POST['jumlah_porsi']) && !empty($_POST['jumlah_porsi']) ? intval($_POST['jumlah_porsi']) : null;
     }
@@ -42,20 +44,77 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("sssssssi", $nama, $email, $pesan, $jenis_kontak, $custom_order_details, $budget_range, $event_date, $jumlah_porsi);
     }
 
-    // ====== CEK BERHASIL ATAU TIDAK ======
     if ($stmt->execute()) {
         $last_insert_id = $stmt->insert_id;
-        
-        // Send admin notification for custom orders
+
+        // ================================
+        // 🔔 KIRIM NOTIFIKASI WHATSAPP UNTUK CUSTOM ORDER
+        // ================================
         if ($jenis_kontak === 'custom_order') {
-            $notifier = new AdminNotifier($conn);
-            $admin_notif_result = $notifier->notifyNewCustomOrder($last_insert_id, true);
-            
-            if (!$admin_notif_result['status']) {
-                error_log("Process contact: Admin notification failed for custom order #$last_insert_id - " . ($admin_notif_result['reason'] ?? $admin_notif_result['error'] ?? 'Unknown'));
+            $adminWaNumber = defined('ADMIN_WA_NUMBER') ? ADMIN_WA_NUMBER : null;
+            $enableNotification = defined('FONNTE_ENABLE_NOTIFICATIONS') && FONNTE_ENABLE_NOTIFICATIONS;
+
+            if ($adminWaNumber && $enableNotification) {
+                try {
+                    // Ambil data lengkap dari database (untuk konsistensi)
+                    $fetchStmt = $conn->prepare("SELECT * FROM kontak WHERE id = ?");
+                    $fetchStmt->bind_param("i", $last_insert_id);
+                    $fetchStmt->execute();
+                    $order = $fetchStmt->get_result()->fetch_assoc();
+                    $fetchStmt->close();
+
+                    if (!$order) {
+                        error_log("Custom order #$last_insert_id tidak ditemukan setelah insert.");
+                    } else {
+                        // Bangun pesan WhatsApp
+                        $order_id = $order['id'];
+                        $nama_pemesan = htmlspecialchars($order['nama'] ?? 'Unknown', ENT_QUOTES, 'UTF-8');
+                        $email_pemesan = htmlspecialchars($order['email'] ?? 'N/A', ENT_QUOTES, 'UTF-8');
+                        $item = htmlspecialchars($order['pesan'] ?? 'N/A', ENT_QUOTES, 'UTF-8');
+                        $details = !empty($order['custom_order_details']) ? htmlspecialchars($order['custom_order_details'], ENT_QUOTES, 'UTF-8') : '';
+                        $budget = !empty($order['budget_range']) ? htmlspecialchars($order['budget_range'], ENT_QUOTES, 'UTF-8') : 'Not specified';
+                        $event_date_fmt = $order['event_date'] ? date('d/m/Y', strtotime($order['event_date'])) : 'Not specified';
+                        $porsi = $order['jumlah_porsi'] ?? '0';
+                        $created_at = date('d/m/Y H:i', strtotime($order['created_at'] ?? 'now'));
+
+                        $message = "⭐ *Pesanan Kustom Baru - Adam's Bakery*\n\n";
+                        $message .= "📦 *Order ID:* #$order_id\n";
+                        $message .= "👤 *Nama Pemesan:* $nama_pemesan\n";
+                        $message .= "📧 *Email:* $email_pemesan\n";
+                        $message .= "🍰 *Item Pesanan:* $item\n";
+                        if (!empty($details)) {
+                            $message .= "🎨 *Detail Khusus:* $details\n";
+                        }
+                        $message .= "📅 *Tanggal Event:* $event_date_fmt\n";
+                        $message .= "🍽️ *Jumlah Porsi:* $porsi\n";
+                        $message .= "💵 *Budget Range:* $budget\n";
+                        $message .= "🕐 *Waktu Diterima:* $created_at\n";
+                        $message .= "\n🔗 Balas/buat quote di: https://adambakery.thebamfams.web.id/adamsbakery/admin/login.php  ";
+
+                        // Kirim via Fonnte
+                        $gateway = new FonnteGateway();
+                        $wa_result = $gateway->sendMessage($adminWaNumber, $message);
+
+                        // Opsional: Update status notifikasi di DB
+                        $notif_status = $wa_result['status'] ? 'sent' : 'failed';
+                        $updateStmt = $conn->prepare("UPDATE kontak SET admin_notified_at = NOW(), admin_notified_status = ? WHERE id = ?");
+                        $updateStmt->bind_param("si", $notif_status, $last_insert_id);
+                        $updateStmt->execute();
+                        $updateStmt->close();
+
+                        if (!$wa_result['status']) {
+                            error_log("Gagal kirim WA untuk custom order #$last_insert_id: " . ($wa_result['error'] ?? 'Unknown'));
+                        }
+                    }
+                } catch (Exception $e) {
+                    error_log("Exception saat kirim notifikasi WA: " . $e->getMessage());
+                }
             }
         }
 
+        // ================================
+        // TAMPILAN SUKSES
+        // ================================
         switch ($jenis_kontak) {
             case 'custom_order':
                 echo "<div style='max-width: 600px; margin: 2rem auto; padding: 2rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px;'>";
