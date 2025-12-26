@@ -548,7 +548,7 @@ button:active,
 }
 
 .add-to-cart-form {
-  margin: var(--spacing-md) 0 0 0;
+  margin-top: auto;     /* INI KUNCINYA */
   padding: 0;
   border: none;
   background: none;
