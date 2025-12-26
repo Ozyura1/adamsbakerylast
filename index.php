@@ -190,7 +190,7 @@ $recent_reviews = $conn->query("
                             
                             <div class="price">Rp <?php echo number_format($product['harga'], 0, ',', '.'); ?></div>
                             
-                            <form method="post" action="add_to_cart.php" style="margin-top: 1rem;">
+                            <form method="post" action="add_to_cart.php" class="add-to-cart-form">
                                 <input type="hidden" name="item_type" value="product">
                                 <input type="hidden" name="item_id" value="<?php echo $product['id']; ?>">
                                 <input type="hidden" name="quantity" value="1">
