@@ -7,7 +7,6 @@ SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
 SET NAMES utf8mb4;
 
-CREATE DATABASE `adamsbakery` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
 USE `adamsbakery`;
 
 DROP TABLE IF EXISTS `admin_users`;
@@ -71,21 +70,6 @@ INSERT INTO `customer_users` (`id`, `nama_lengkap`, `email`, `password`, `phone`
 (39,	'kepo banget dengan no wa',	'indexphp1@gmail.com',	'$2y$12$0eYOHM6bTAG4k7EJaRvn6.Q7mcVXwhWbO294f0G7ig2TqqDGycoai',	'082211445566',	'KEPOO BANGETTTT',	'2025-12-07 06:56:22',	'2025-12-07 06:56:22',	0,	'935414',	'2025-12-07 07:01:22',	0,	NULL,	NULL),
 (40,	'KENAPAA KEPO BANGETT??',	'indexphp2@gmail.com',	'$2y$12$3JON/K7H4LbtavMRLUit0emH81QB96qSlAFLk2/BElz7vQZjExNVi',	'082211445566',	'GA BOLEH KEPO',	'2025-12-07 06:57:42',	'2025-12-07 06:57:42',	0,	'894966',	'2025-12-07 07:02:42',	0,	NULL,	NULL);
 
-DROP TABLE IF EXISTS `custom_order_quotes`;
-CREATE TABLE `custom_order_quotes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `kontak_id` int(11) NOT NULL,
-  `quoted_price` decimal(10,2) NOT NULL,
-  `quote_details` text DEFAULT NULL,
-  `valid_until` date DEFAULT NULL,
-  `status` enum('pending','accepted','rejected','expired') DEFAULT 'pending',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `kontak_id` (`kontak_id`),
-  CONSTRAINT `custom_order_quotes_ibfk_1` FOREIGN KEY (`kontak_id`) REFERENCES `kontak` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
 DROP TABLE IF EXISTS `kontak`;
 CREATE TABLE `kontak` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -114,6 +98,21 @@ INSERT INTO `kontak` (`id`, `nama`, `email`, `pesan`, `jenis_kontak`, `custom_or
 (18,	'Donat Coklat',	'nurcahyaputraa@gmail.com',	'rxtiryi',	'custom_order',	'5rurr',	'2jt - 5jt',	'2025-11-30',	88,	'confirmed',	'2025-11-27 13:28:03',	NULL,	NULL,	'pending'),
 (19,	'Farrel',	'farrelking2@gmail.com',	'mimimimi',	'custom_order',	'woilah cik test',	'> 5jt',	'2025-12-10',	100,	'confirmed',	'2025-12-04 08:18:23',	NULL,	'2025-12-04 08:18:23',	'sent'),
 (20,	'gustiwir',	'nurcahyaputraa@gmail.com',	'ngiwir ngiwir',	'custom_order',	'rasanya harus ngiwir buangett',	'> 5jt',	'2025-12-11',	800,	'confirmed',	'2025-12-07 00:26:26',	NULL,	'2025-12-07 00:26:27',	'sent');
+
+
+DROP TABLE IF EXISTS `custom_order_quotes`;
+CREATE TABLE `custom_order_quotes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `kontak_id` int(11) NOT NULL,
+  `quoted_price` decimal(10,2) NOT NULL,
+  `quote_details` text DEFAULT NULL,
+  `valid_until` date DEFAULT NULL,
+  `status` enum('pending','accepted','rejected','expired') DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `kontak_id` (`kontak_id`),
+  CONSTRAINT `custom_order_quotes_ibfk_1` FOREIGN KEY (`kontak_id`) REFERENCES `kontak` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 DROP TABLE IF EXISTS `packages`;
 CREATE TABLE `packages` (
@@ -193,35 +192,6 @@ CREATE TABLE `promos` (
 INSERT INTO `promos` (`id`, `title`, `description`, `created_at`) VALUES
 (1,	'Gratis Ongkir',	'Gratis coii',	'2025-09-23 16:24:29');
 
-DROP TABLE IF EXISTS `reviews`;
-CREATE TABLE `reviews` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `transaction_id` int(11) NOT NULL,
-  `product_id` int(11) DEFAULT NULL COMMENT 'ID produk jika review untuk produk',
-  `package_id` int(11) DEFAULT NULL COMMENT 'ID paket jika review untuk paket',
-  `item_type` enum('product','package') NOT NULL DEFAULT 'product' COMMENT 'Tipe item: product atau package',
-  `nama_reviewer` varchar(255) NOT NULL,
-  `rating` int(11) NOT NULL,
-  `review_text` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `idx_review_transaction` (`transaction_id`),
-  KEY `idx_review_product` (`product_id`),
-  KEY `idx_review_package` (`package_id`),
-  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`package_id`) REFERENCES `packages` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-INSERT INTO `reviews` (`id`, `transaction_id`, `product_id`, `package_id`, `item_type`, `nama_reviewer`, `rating`, `review_text`, `created_at`) VALUES
-(10,	36,	NULL,	NULL,	'product',	'adam',	3,	'regegas',	'2025-11-02 03:22:55'),
-(21,	50,	16,	NULL,	'product',	'adamdam',	5,	'ntaps',	'2025-11-21 10:12:04'),
-(22,	52,	NULL,	1,	'package',	'adamdam',	1,	'juzjuz',	'2025-11-24 14:16:12'),
-(23,	54,	18,	NULL,	'product',	'kicik',	3,	'',	'2025-11-27 13:26:15'),
-(24,	54,	NULL,	2,	'package',	'kicik',	1,	'',	'2025-11-27 13:26:24'),
-(25,	58,	NULL,	1,	'package',	'adamdam',	2,	'mantep coi',	'2025-12-07 00:24:02'),
-(26,	58,	6,	NULL,	'product',	'adamdam',	4,	'rasanya mantap seperti iwir iwir',	'2025-12-07 00:24:37');
-
 DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -260,6 +230,35 @@ INSERT INTO `transactions` (`id`, `nama_pembeli`, `email`, `phone`, `alamat`, `t
 (56,	'Tegar',	'trex50990@gmail.com',	'082225348452',	'Rumah Gusti',	200000.00,	'transfer_bank',	'Lainnya',	'0',	'1793833442',	200000.00,	NULL,	'confirmed',	'2025-12-05 10:51:23',	'2025-12-05 18:51:21',	35,	'file_1764931883_f58c79902e7be7c5.png',	'2025-12-05 10:51:24',	'sent',	0),
 (57,	'Farrel',	'farrelking2@gmail.com',	'085175393742',	'yeyeye',	65000.00,	'transfer_bank',	'Lainnya',	'0',	'12345',	65000.00,	NULL,	'confirmed',	'2025-12-05 18:03:27',	'2025-12-05 18:41:02',	36,	'file_1764957807_ac6629bd71961350.jpg',	'2025-12-05 18:07:11',	'sent',	0),
 (58,	'adamdam',	'nurcahyaputraa@gmail.com',	'082225348452',	'jc dfg',	80000.00,	'transfer_bank',	'Lainnya',	'0',	'-',	80000.00,	NULL,	'confirmed',	'2025-12-07 00:21:47',	'2025-12-07 00:23:03',	25,	'file_1765066907_51d22f24d66ac6e8.png',	'2025-12-07 00:23:03',	'sent',	0);
+
+DROP TABLE IF EXISTS `reviews`;
+CREATE TABLE `reviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `transaction_id` int(11) NOT NULL,
+  `product_id` int(11) DEFAULT NULL COMMENT 'ID produk jika review untuk produk',
+  `package_id` int(11) DEFAULT NULL COMMENT 'ID paket jika review untuk paket',
+  `item_type` enum('product','package') NOT NULL DEFAULT 'product' COMMENT 'Tipe item: product atau package',
+  `nama_reviewer` varchar(255) NOT NULL,
+  `rating` int(11) NOT NULL,
+  `review_text` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_review_transaction` (`transaction_id`),
+  KEY `idx_review_product` (`product_id`),
+  KEY `idx_review_package` (`package_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`package_id`) REFERENCES `packages` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `reviews` (`id`, `transaction_id`, `product_id`, `package_id`, `item_type`, `nama_reviewer`, `rating`, `review_text`, `created_at`) VALUES
+(10,	36,	NULL,	NULL,	'product',	'adam',	3,	'regegas',	'2025-11-02 03:22:55'),
+(21,	50,	16,	NULL,	'product',	'adamdam',	5,	'ntaps',	'2025-11-21 10:12:04'),
+(22,	52,	NULL,	1,	'package',	'adamdam',	1,	'juzjuz',	'2025-11-24 14:16:12'),
+(23,	54,	18,	NULL,	'product',	'kicik',	3,	'',	'2025-11-27 13:26:15'),
+(24,	54,	NULL,	2,	'package',	'kicik',	1,	'',	'2025-11-27 13:26:24'),
+(25,	58,	NULL,	1,	'package',	'adamdam',	2,	'mantep coi',	'2025-12-07 00:24:02'),
+(26,	58,	6,	NULL,	'product',	'adamdam',	4,	'rasanya mantap seperti iwir iwir',	'2025-12-07 00:24:37');
 
 DROP TABLE IF EXISTS `transaction_items`;
 CREATE TABLE `transaction_items` (
